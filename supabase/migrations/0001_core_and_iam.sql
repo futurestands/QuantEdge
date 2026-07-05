@@ -333,3 +333,9 @@ CREATE POLICY manage_tags ON public.tags
 -- Feature Flags
 CREATE POLICY select_flags ON public.feature_flags
     FOR SELECT USING (organization_id IN (SELECT public.get_my_organizations()));
+
+CREATE POLICY manage_flags ON public.feature_flags
+    FOR ALL USING (organization_id IN (SELECT public.get_my_organizations('admin'))
+                   OR organization_id IN (SELECT public.get_my_organizations('owner')))
+    WITH CHECK (organization_id IN (SELECT public.get_my_organizations('admin'))
+                OR organization_id IN (SELECT public.get_my_organizations('owner')));

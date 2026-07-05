@@ -1,0 +1,50 @@
+services:
+  web:
+    build:
+      context: ./apps/web
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_BACKTESTER_URL: http://localhost:8080
+      VITE_SUPABASE_URL: ${VITE_SUPABASE_URL}
+      VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY}
+    depends_on:
+      - backtester
+    volumes:
+      - ./apps/web:/app
+      - /app/node_modules
+
+  backtester:
+    build:
+      context: ./services/backtester
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080", "--log-level", "debug"]
+    ports:
+      - "8080:8080"
+    environment:
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@db:5432/quantedge
+      REDIS_URL: redis://redis:6379/0
+      SUPABASE_JWT_SECRET: ${SUPABASE_JWT_SECRET}
+      JWT_SECRET: ${JWT_SECRET}
+      SUPABASE_URL: http://host.docker.internal:54321
+      SUPABASE_AUTH_URL: http://host.docker.internal:54321/auth/v1
+      SUPABASE_JWT_ISSUER: http://127.0.0.1:54321/auth/v1
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: quantedge
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./supabase/migrations:/docker-entrypoint-initdb.d:ro
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+volumes:
+  pgdata:
+

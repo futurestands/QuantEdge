@@ -1,0 +1,15 @@
+{
+  "name": "quantedge-ai-platform",
+  "private": true,
+  "workspaces": [
+    "apps/web"
+  ],
+  "scripts": {
+    "start": "npm run dev",
+    "dev": "npm --workspace apps/web run dev",
+    "build": "npm --workspace apps/web run build",
+    "test": "npm --workspace apps/web run test",
+    "lint": "npm --workspace apps/web run lint"
+  }
+}
+

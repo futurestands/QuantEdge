@@ -15,7 +15,8 @@ import {
   LogOut,
   User,
   RefreshCw,
-  Terminal
+  Terminal,
+  ShieldAlert
 } from "lucide-react";
 import { runSavedStrategyBacktest } from "./lib/backtester";
 import { generateCoachReport } from "./lib/coach";
@@ -58,6 +59,7 @@ import type {
 import { ErrorBoundary } from "./ErrorBoundary";
 
 // Features
+import { LandingView } from "./features/landing/LandingView";
 import { DashboardView } from "./features/dashboard/DashboardView";
 import { ResearchLibrary } from "./features/research/ResearchLibrary";
 import { BacktestingLab } from "./features/research/BacktestingLab";
@@ -70,14 +72,8 @@ import { RiskView } from "./features/risk/RiskView";
 import { ImportsView } from "./features/research/ImportsView";
 import { AuthModal } from "./features/auth/AuthModal";
 import { DisciplineView } from "./features/discipline/DisciplineView";
-
-import { LandingView } from "./features/landing/LandingView";
-
 import { MarketThesisWorkspace } from "./features/blueprint/MarketThesisWorkspace";
 import { FirewallDashboard } from "./features/firewall/FirewallDashboard";
-
-import { BuilderView } from "./features/strategy/BuilderView";
-import { DisciplineView } from "./features/discipline/DisciplineView";
 
 import "./styles.css";
 
@@ -90,9 +86,12 @@ const appTabs = [
   { id: "projects", label: "Research Library", icon: FolderKanban },
   { id: "backtests", label: "Backtesting Lab", icon: Play },
   { id: "builder", label: "Strategies", icon: Braces },
+  { id: "edge", label: "Edge Finder", icon: Activity },
   { id: "coach", label: "AI Coach", icon: Bot },
   { id: "reports", label: "Command Center", icon: WalletCards },
-  { id: "risk", label: "Risk & Settings", icon: ShieldCheck }
+  { id: "risk", label: "Risk & Settings", icon: ShieldCheck },
+  { id: "discipline", label: "Discipline Guardian", icon: ShieldAlert },
+  { id: "imports", label: "Market Data", icon: CandlestickChart }
 ] as const;
 
 type AppTab = typeof appTabs[number]["id"];
@@ -277,7 +276,7 @@ function App() {
   async function handleSaveJournal() {
     if (!dashboard?.organization?.id || !selectedTrade) return;
     try {
-      await saveBacktestTradeJournal({ organizationId: dashboard.organization.id, backtestTradeId: (selectedTrade.id ?? selectedTrade.trade_index), emotion: journalEmotion, notes: journalNotes, mistakes: journalMistakes.split(","), executionQuality, confidenceScore });
+      await saveBacktestTradeJournal({ organizationId: dashboard.organization.id, backtestTradeId: (selectedTrade.id ?? selectedTrade.trade_index).toString(), emotion: journalEmotion, notes: journalNotes, mistakes: journalMistakes.split(","), executionQuality, confidenceScore });
       setJournalNotes(""); await refresh();
     } catch (e) { setStatus("Journal failed"); }
   }
@@ -347,9 +346,6 @@ function App() {
             {activeTab === "dashboard" && <DashboardView data={data} onNavigate={setActiveTab} />}
             {activeTab === "thesis" && <MarketThesisWorkspace data={data} refresh={refresh} />}
             {activeTab === "firewall" && <FirewallDashboard data={data} refresh={refresh} />}
-            {activeTab === "journal" && <JournalView data={data} selectedTrade={selectedTrade} setSelectedTradeId={setSelectedTradeId} journalEmotion={journalEmotion} setJournalEmotion={setJournalEmotion} journalMistakes={journalMistakes} setJournalMistakes={setJournalMistakes} journalNotes={journalNotes} setJournalNotes={setJournalNotes} onSubmit={handleSaveJournal} activeProject={activeProject} formatMetric={formatMetric} />}
-            {activeTab === "builder" && <BuilderView data={data} strategyName={strategyName} setStrategyName={setStrategyName} direction={direction} setDirection={setDirection} sessionFilter={sessionFilter} setSessionFilter={setSessionFilter} emaFast={emaFast} setEmaFast={setEmaFast} emaSlow={emaSlow} setEmaSlow={setEmaSlow} rsiPeriod={rsiPeriod} setRsiPeriod={setRsiPeriod} rsiMax={rsiMax} setRsiMax={setRsiMax} stopLossAtr={stopLossAtr} setStopLossAtr={setStopLossAtr} takeProfitRr={takeProfitRr} setTakeProfitRr={setTakeProfitRr} riskPerTrade={riskPerTrade} setRiskPerTrade={setRiskPerTrade} initialBalance={initialBalance} setInitialBalance={setInitialBalance} entryRule={entryRule} setEntryRule={setEntryRule} exitRule={exitRule} setExitRule={setExitRule} onSubmit={handleCreateStrategy} />}
-            {activeTab === "discipline" && <DisciplineView data={data} refresh={refresh} />}
             {activeTab === "projects" && <ResearchLibrary data={data} onSelectProject={(p:any) => { setActiveProject(p); setActiveTab("backtests"); }} />}
             {activeTab === "discipline" && <DisciplineView data={data} refresh={refresh} />}
             {activeTab === "builder" && <BuilderView data={data} strategyName={strategyName} setStrategyName={setStrategyName} direction={direction} setDirection={setDirection} sessionFilter={sessionFilter} setSessionFilter={setSessionFilter} emaFast={emaFast} setEmaFast={setEmaFast} emaSlow={emaSlow} setEmaSlow={setEmaSlow} rsiPeriod={rsiPeriod} setRsiPeriod={setRsiPeriod} rsiMax={rsiMax} setRsiMax={setRsiMax} stopLossAtr={stopLossAtr} setStopLossAtr={setStopLossAtr} takeProfitRr={takeProfitRr} setTakeProfitRr={setTakeProfitRr} riskPerTrade={riskPerTrade} setRiskPerTrade={setRiskPerTrade} initialBalance={initialBalance} setInitialBalance={setInitialBalance} entryRule={entryRule} setEntryRule={setEntryRule} exitRule={exitRule} setExitRule={setExitRule} onSubmit={handleCreateStrategy} />}

@@ -1,4 +1,4 @@
-import type { DashboardData, StrategyRow, BacktestRow, BacktestTradeRow, JournalRow, OptimizationRun, RiskProfile } from "./types";
+import type { DashboardData, StrategyRow, BacktestRow, BacktestTradeRow, JournalRow, OptimizationRun, RiskProfile, ResearchProject, TradingPlan, TradeSession, MarketThesis } from "./types";
 
 export function buildDemoDashboard(): DashboardData {
   const demoOrg = { id: "demo-org", name: "Demo Workspace" };
@@ -132,6 +132,9 @@ export function buildDemoDashboard(): DashboardData {
     journals: demoJournals,
     riskProfile: demoRisk,
     optimizationRuns: [],
-    researchProjects: demoProjects
+    researchProjects: demoProjects,
+    tradingPlans: [],
+    activeSession: null,
+    activeThesis: null
   };
 }

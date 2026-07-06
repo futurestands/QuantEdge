@@ -1,5 +1,5 @@
 import React from "react";
-import { Terminal, Zap, ArrowRight, Play, Database, Cpu, CheckCircle } from "lucide-react";
+import { Terminal, Zap, ArrowRight, Play, Database, Cpu, CheckCircle, Bot } from "lucide-react";
 import { WorkflowStep, LandingCard, Testimonial } from "./LandingAtoms";
 
 export const LandingView = ({ setMode, setIsAuthModalOpen, setAuthMode }: any) => {

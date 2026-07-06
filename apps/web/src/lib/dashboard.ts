@@ -1,5 +1,26 @@
 import { supabase } from "./supabase";
-import type { AiReport, BacktestResult, BacktestRow, BacktestRunConfig, BacktestTradeRow, DashboardData, JournalRow, Metric, OptimizationRun, Organization, RiskProfile, StrategyDraft, StrategyRow, TradeRow } from "./types";
+import type {
+  AiReport,
+  BacktestResult,
+  BacktestRow,
+  BacktestRunConfig,
+  BacktestTradeRow,
+  DashboardData,
+  JournalRow,
+  Metric,
+  OptimizationRun,
+  Organization,
+  RiskProfile,
+  StrategyDraft,
+  StrategyRow,
+  TradeRow,
+  MarketThesis,
+  MarketScenario,
+  TradingPlan,
+  TradeSession,
+  ResearchProject,
+  ResearchStatus
+} from "./types";
 import type { CoachReportDraft } from "./coach";
 
 export async function getSession() {
@@ -88,15 +109,9 @@ export async function loadDashboardData(): Promise<DashboardData> {
       ])
     : [[], []];
 
-  const data = buildDashboard(organization, trades, backtests, strategies, report, backtestTrades, journals, riskProfile, optimizationRuns, researchProjects);
+  const data = buildDashboard(organization, trades, backtests, strategies, report, backtestTrades, journals, riskProfile, optimizationRuns, researchProjects, tradingPlans, sessions[0] || null, theses[0] || null);
 
-  return {
-    ...data,
-    tradingPlans,
-    activeSession: sessions[0] || null,
-    researchProjects,
-    activeThesis: theses[0] || null
-  };
+  return data;
 }
 
 async function loadActiveThesis(organizationId: string): Promise<MarketThesis[]> {
@@ -585,7 +600,10 @@ function buildDashboard(
   journals: JournalRow[],
   riskProfile: RiskProfile | null,
   optimizationRuns: OptimizationRun[],
-  researchProjects: ResearchProject[]
+  researchProjects: ResearchProject[],
+  tradingPlans: TradingPlan[],
+  activeSession: TradeSession | null,
+  activeThesis: MarketThesis | null
 ): DashboardData {
   const latestBacktest = backtests[0];
   const metricsFromBacktest = latestBacktest?.metrics ?? {};
@@ -616,7 +634,10 @@ function buildDashboard(
     journals,
     riskProfile,
     optimizationRuns,
-    researchProjects
+    researchProjects,
+    tradingPlans,
+    activeSession,
+    activeThesis
   };
 }
 
@@ -657,7 +678,10 @@ function buildEmptyDashboard(message: string): DashboardData {
     journals: [],
     riskProfile: null,
     optimizationRuns: [],
-    researchProjects: []
+    researchProjects: [],
+    tradingPlans: [],
+    activeSession: null,
+    activeThesis: null
   };
 }
 

@@ -65,20 +65,12 @@ export async function saveBacktestResult(config: BacktestRunConfig, result: Back
 
   if (result.trades.length) {
     const rows = result.trades.map((trade, index) => ({
-      organization_id: config.organizationId,
       backtest_id: backtest.id,
       trade_index: index + 1,
-      payload: trade,
-      direction: trade.side,
-      symbol: config.symbol,
-      entry_price: trade.entry_price,
-      exit_price: trade.exit_price,
-      pnl: trade.pnl,
-      lot_size: trade.quantity,
-      status: 'closed'
+      payload: trade
     }));
 
-    const { error: tradeError } = await supabase.from("trade_events").insert(rows);
+    const { error: tradeError } = await supabase.from("backtest_trades").insert(rows);
     if (tradeError) throw tradeError;
   }
 
@@ -152,7 +144,7 @@ export async function loadBacktests(organizationId: string): Promise<BacktestRow
 
 export async function loadBacktestTrades(backtestId: string): Promise<BacktestTradeRow[]> {
   const { data, error } = await supabase
-    .from("trade_events")
+    .from("backtest_trades")
     .select("id, backtest_id, trade_index, payload")
     .eq("backtest_id", backtestId)
     .order("trade_index", { ascending: true })

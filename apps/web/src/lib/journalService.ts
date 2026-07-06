@@ -41,15 +41,17 @@ export async function loadJournals(organizationId: string): Promise<JournalRow[]
 export async function loadTrades(organizationId: string): Promise<TradeRow[]> {
   const { data, error } = await supabase
     .from("trade_events")
-    .select("id, symbol, direction, entry_time, exit_time, pnl, session, strategy_version_id")
+    .select("id, symbol, direction, created_at, updated_at, pnl, session, strategy_version_id")
     .eq("organization_id", organizationId)
-    .order("entry_time", { ascending: true })
+    .order("created_at", { ascending: true })
     .limit(500);
 
   if (error) throw error;
   return (data ?? []).map(row => ({
     ...row,
     side: row.direction,
+    entry_time: row.created_at,
+    exit_time: row.pnl !== null ? row.updated_at : null,
     strategy_id: row.strategy_version_id
   })) as any as TradeRow[];
 }

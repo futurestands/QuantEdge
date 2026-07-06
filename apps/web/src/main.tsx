@@ -74,12 +74,15 @@ import { AuthModal } from "./features/auth/AuthModal";
 import { DisciplineView } from "./features/discipline/DisciplineView";
 import { MarketThesisWorkspace } from "./features/blueprint/MarketThesisWorkspace";
 import { FirewallDashboard } from "./features/firewall/FirewallDashboard";
+import { LiveTradeCenter } from "./features/live/LiveTradeCenter";
+import { OptimizationView } from "./features/research/OptimizationView";
 
 import "./styles.css";
 
 // --- CONSTANTS ---
 const appTabs = [
   { id: "dashboard", label: "Mission Control", icon: Gauge },
+  { id: "live", label: "Live Trade Center", icon: Activity },
   { id: "thesis", label: "Market Thesis", icon: Terminal },
   { id: "firewall", label: "Pre-Trade Gateway", icon: ShieldCheck },
   { id: "journal", label: "Trading Journey", icon: BookOpen },
@@ -87,6 +90,7 @@ const appTabs = [
   { id: "backtests", label: "Backtesting Lab", icon: Play },
   { id: "builder", label: "Strategies", icon: Braces },
   { id: "edge", label: "Edge Finder", icon: Activity },
+  { id: "optimization", label: "Optimization", icon: FastForward },
   { id: "coach", label: "AI Coach", icon: Bot },
   { id: "reports", label: "Command Center", icon: WalletCards },
   { id: "risk", label: "Risk & Settings", icon: ShieldCheck },
@@ -344,6 +348,7 @@ function App() {
         <div className="flex-1 overflow-y-auto custom-scrollbar">
           <div className="grid gap-6 p-8">
             {activeTab === "dashboard" && <DashboardView data={data} onNavigate={setActiveTab} />}
+            {activeTab === "live" && <LiveTradeCenter />}
             {activeTab === "thesis" && <MarketThesisWorkspace data={data} refresh={refresh} />}
             {activeTab === "firewall" && <FirewallDashboard data={data} refresh={refresh} />}
             {activeTab === "projects" && <ResearchLibrary data={data} onSelectProject={(p:any) => { setActiveProject(p); setActiveTab("backtests"); }} />}
@@ -353,6 +358,7 @@ function App() {
             {activeTab === "imports" && <ImportsView csvSymbol={csvSymbol} setCsvSymbol={setCsvSymbol} csvTimeframe={csvTimeframe} setCsvTimeframe={setCsvTimeframe} setCsvFile={setCsvFile} handleCandleImport={handleCandleImport} setTradeCsvFile={setTradeCsvFile} handleTradeImport={handleTradeImport} />}
             {activeTab === "journal" && <JournalView data={data} selectedTrade={selectedTrade} setSelectedTradeId={setSelectedTradeId} journalEmotion={journalEmotion} setJournalEmotion={setJournalEmotion} journalMistakes={journalMistakes} setJournalMistakes={setJournalMistakes} journalNotes={journalNotes} setJournalNotes={setJournalNotes} onSubmit={handleSaveJournal} activeProject={activeProject} formatMetric={formatMetric} />}
             {activeTab === "edge" && <EdgeView data={data} edgeFinder={edgeFinder} formatMetric={formatMetric} />}
+            {activeTab === "optimization" && <OptimizationView data={data} refresh={refresh} />}
             {activeTab === "coach" && <CoachView data={data} handleGenerateCoachReport={handleGenerateCoachReport} />}
             {activeTab === "reports" && <ReportsView data={data} />}
             {activeTab === "risk" && <RiskView data={data} riskPlanName={riskPlanName} setRiskPlanName={setRiskPlanName} dailyLossLimit={dailyLossLimit} setDailyLossLimit={setDailyLossLimit} weeklyLossLimit={weeklyLossLimit} setWeeklyLossLimit={setWeeklyLossLimit} maxDrawdownLimit={maxDrawdownLimit} setMaxDrawdownLimit={setMaxDrawdownLimit} riskPlanRiskPerTrade={riskPlanRiskPerTrade} setRiskPlanRiskPerTrade={setRiskPlanRiskPerTrade} handleSaveRiskProfile={handleSaveRiskProfile} drawdownStatus={drawdownStatus} latestDrawdown={latestDrawdown} />}

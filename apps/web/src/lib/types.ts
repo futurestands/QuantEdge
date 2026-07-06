@@ -1,3 +1,43 @@
+export type TradeDirection = "long" | "short";
+
+export type OrderType = 'market' | 'limit' | 'stop' | 'stop_limit';
+export type OrderStatus = 'pending' | 'filled' | 'cancelled' | 'expired' | 'rejected';
+export type PositionStatus = 'open' | 'closed' | 'liquidated';
+
+export type LiveAccount = {
+  id: string;
+  broker_account_id: string;
+  organization_id: string;
+  balance: number;
+  equity: number;
+  margin: number;
+  free_margin: number;
+  margin_level: number | null;
+  unrealized_pnl: number;
+  daily_pnl: number;
+  weekly_pnl: number;
+  updated_at: string;
+};
+
+export type OpenPosition = {
+  id: string;
+  organization_id: string;
+  broker_account_id: string;
+  external_id: string;
+  symbol: string;
+  direction: TradeDirection;
+  entry_price: number;
+  current_price: number;
+  lot_size: number;
+  stop_loss: number | null;
+  take_profit: number | null;
+  unrealized_pnl: number;
+  commission: number;
+  swap: number;
+  opened_at: string;
+  updated_at: string;
+};
+
 export type Metric = {
   label: string;
   value: string;

@@ -1,5 +1,6 @@
 import { supabase } from "./supabase";
-import type { JournalRow, TradeRow } from "./types";
+import { saveTradeReview } from "./reviewService";
+import type { JournalRow } from "./types";
 
 export async function saveBacktestTradeJournal(input: {
   organizationId: string;
@@ -21,6 +22,18 @@ export async function saveBacktestTradeJournal(input: {
   });
 
   if (error) throw error;
+
+  // Persist intelligence via trade_reviews
+  await saveTradeReview({
+    organization_id: input.organizationId,
+    trade_event_id: input.backtestTradeId,
+    review: input.notes,
+    emotion: input.emotion,
+    mistake_category: input.mistakes[0] || "none",
+    execution_quality: input.executionQuality,
+    risk_quality: 9,
+    discipline_quality: input.mistakes.length === 0 ? 10 : 6
+  });
 }
 
 export async function loadJournals(organizationId: string): Promise<JournalRow[]> {
@@ -34,24 +47,6 @@ export async function loadJournals(organizationId: string): Promise<JournalRow[]
   if (error) throw error;
   return (data ?? []).map(row => ({
     ...row,
-    notes: row.content // Adapter for legacy JournalRow type
+    notes: row.content
   })) as JournalRow[];
-}
-
-export async function loadTrades(organizationId: string): Promise<TradeRow[]> {
-  const { data, error } = await supabase
-    .from("trade_events")
-    .select("id, symbol, direction, created_at, updated_at, pnl, session, strategy_version_id")
-    .eq("organization_id", organizationId)
-    .order("created_at", { ascending: true })
-    .limit(500);
-
-  if (error) throw error;
-  return (data ?? []).map(row => ({
-    ...row,
-    side: row.direction,
-    entry_time: row.created_at,
-    exit_time: row.pnl !== null ? row.updated_at : null,
-    strategy_id: row.strategy_version_id
-  })) as any as TradeRow[];
 }

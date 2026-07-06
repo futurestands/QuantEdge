@@ -213,9 +213,58 @@ export type StrategyDraft = {
 };
 
 export type AiReport = {
+  id: string;
+  organization_id: string;
+  user_id: string | null;
+  session_id: string | null;
+  trade_id: string | null;
+  report_type: string;
   summary: string;
-  findings: unknown[];
-  scores: Record<string, unknown>;
+  findings: Array<{ title: string; detail: string; severity: "positive" | "neutral" | "warning" }>;
+  scores: Record<string, number>;
+  metadata: Record<string, unknown>;
+  created_at: string;
+};
+
+export type DisciplineGrade = 'A+' | 'A' | 'B' | 'C' | 'D';
+
+export type DisciplineScore = {
+  id: string;
+  organization_id: string;
+  user_id: string;
+  session_id: string | null;
+  execution_score: number;
+  risk_score: number;
+  psychology_score: number;
+  consistency_score: number;
+  planning_score: number;
+  overall_score: number;
+  grade: DisciplineGrade;
+  created_at: string;
+};
+
+export type SessionReview = {
+  id: string;
+  organization_id: string;
+  session_id: string;
+  summary: string;
+  mistakes: string[];
+  good_decisions: string[];
+  lesson: string;
+  confidence: number;
+  created_at: string;
+};
+
+export type TradeReview = {
+  id: string;
+  organization_id: string;
+  trade_event_id: string;
+  review: string;
+  emotion: string;
+  mistake_category: string;
+  execution_quality: number;
+  risk_quality: number;
+  discipline_quality: number;
   created_at: string;
 };
 
@@ -333,6 +382,10 @@ export type DashboardData = {
   tradingPlans: TradingPlan[];
   activeSession: TradeSession | null;
   activeThesis: MarketThesis | null;
+  aiReports: AiReport[];
+  disciplineScores: DisciplineScore[];
+  sessionReviews: SessionReview[];
+  tradeReviews: TradeReview[];
 };
 
 export type BacktestResult = {

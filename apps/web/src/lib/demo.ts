@@ -135,6 +135,10 @@ export function buildDemoDashboard(): DashboardData {
     researchProjects: demoProjects,
     tradingPlans: [],
     activeSession: null,
-    activeThesis: null
+    activeThesis: null,
+    aiReports: [],
+    disciplineScores: [],
+    sessionReviews: [],
+    tradeReviews: []
   };
 }

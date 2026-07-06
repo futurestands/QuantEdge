@@ -29,6 +29,7 @@ export const buildEquityFromTrades = (trades: any[]) => {
 };
 
 export const calculateResearchScore = (m: any) => {
+  if (!m) return 0;
   let score = 50;
   if (m.win_rate > 0.5) score += 20;
   if (m.profit_factor > 1.5) score += 15;
@@ -37,6 +38,7 @@ export const calculateResearchScore = (m: any) => {
 };
 
 export const calculateReadinessScore = (m: any) => {
+  if (!m) return 0;
   let score = 40;
   if (m.trade_count > 100) score += 30;
   if (m.max_drawdown < 0.1) score += 30;

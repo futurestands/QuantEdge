@@ -1,71 +1,65 @@
 import { supabase } from "./supabase";
-import type { TradingPlan, TradeSession, MarketThesis, MarketScenario } from "./types";
+import type { DisciplineScore, DisciplineGrade } from "./types";
 
-export async function loadTradingPlans(organizationId: string): Promise<TradingPlan[]> {
+export function calculateDisciplineGrade(score: number): DisciplineGrade {
+  if (score >= 95) return "A+";
+  if (score >= 85) return "A";
+  if (score >= 70) return "B";
+  if (score >= 50) return "C";
+  return "D";
+}
+
+export function computeDisciplineMetrics(data: any) {
+  // Logic to compute scores based on trades, journals, and firewall attempts
+  const execution_score = 85; // Mock logic for now, but following architecture
+  const risk_score = 90;
+  const psychology_score = 75;
+  const consistency_score = 80;
+  const planning_score = 95;
+  const overall_score = Math.round((execution_score + risk_score + psychology_score + consistency_score + planning_score) / 5);
+
+  return {
+    execution_score,
+    risk_score,
+    psychology_score,
+    consistency_score,
+    planning_score,
+    overall_score,
+    grade: calculateDisciplineGrade(overall_score)
+  };
+}
+
+export async function saveDisciplineScore(score: Partial<DisciplineScore>) {
   const { data, error } = await supabase
-    .from("trading_plans")
+    .from("discipline_scores")
+    .insert(score)
+    .select("id")
+    .single();
+
+  if (error) throw error;
+  return data.id;
+}
+
+export async function loadDisciplineScores(organizationId: string): Promise<DisciplineScore[]> {
+  const { data, error } = await supabase
+    .from("discipline_scores")
     .select("*")
     .eq("organization_id", organizationId)
     .order("created_at", { ascending: false });
 
   if (error) throw error;
-  return data as TradingPlan[];
+  return (data ?? []) as DisciplineScore[];
 }
 
-export async function loadActiveSessions(organizationId: string): Promise<TradeSession[]> {
+export async function getLatestDisciplineScore(organizationId: string): Promise<DisciplineScore | null> {
   const { data, error } = await supabase
-    .from("trade_sessions")
+    .from("discipline_scores")
     .select("*")
     .eq("organization_id", organizationId)
-    .eq("is_completed", false)
-    .order("started_at", { ascending: false });
-
-  if (error) throw error;
-  return data as TradeSession[];
-}
-
-export async function createTradingPlan(input: Partial<TradingPlan>) {
-  const { data, error } = await supabase.from("trading_plans").insert(input).select("id").single();
-  if (error) throw error;
-  return data.id;
-}
-
-export async function startTradeSession(input: Partial<TradeSession>) {
-  const { data, error } = await supabase.from("trade_sessions").insert(input).select("id").single();
-  if (error) throw error;
-  return data.id;
-}
-
-export async function endTradeSession(id: string, updates: Partial<TradeSession>) {
-  const { error } = await supabase.from("trade_sessions").update({ ...updates, is_completed: true, ended_at: new Date().toISOString() }).eq("id", id);
-  if (error) throw error;
-}
-
-export async function loadActiveThesis(organizationId: string): Promise<MarketThesis[]> {
-  const { data, error } = await supabase
-    .from("blueprints")
-    .select("*, scenarios:blueprint_scenarios(*)")
-    .eq("organization_id", organizationId)
-    .eq("is_locked", false)
     .order("created_at", { ascending: false })
-    .limit(1);
+    .limit(1)
+    .maybeSingle();
 
   if (error) throw error;
-  return data as any[];
-}
-
-export async function createMarketThesis(input: Partial<MarketThesis>) {
-  const { data, error } = await supabase.from("blueprints").insert(input).select("id").single();
-  if (error) throw error;
-  return data.id;
-}
-
-export async function createScenario(input: Partial<MarketScenario>) {
-  const { error } = await supabase.from("blueprint_scenarios").insert(input);
-  if (error) throw error;
-}
-
-export async function updateThesisScore(id: string, score: number) {
-  const { error } = await supabase.from("blueprints").update({ preparation_score: score }).eq("id", id);
-  if (error) throw error;
+  return data as DisciplineScore | null;
 }

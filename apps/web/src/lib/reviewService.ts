@@ -1,35 +1,46 @@
 import { supabase } from "./supabase";
-import type { AiReport } from "./types";
-import type { CoachReportDraft } from "./coach";
+import type { SessionReview, TradeReview } from "./types";
 
-export async function saveCoachReport(input: {
-  organizationId: string;
-  subjectId: string | null;
-  report: CoachReportDraft;
-}) {
-  const { error } = await supabase.from("ai_reports").insert({
-    organization_id: input.organizationId,
-    report_type: "backtest_coach",
-    subject_type: "backtest",
-    subject_id: input.subjectId,
-    prompt_version: "deterministic-v1",
-    summary: input.report.summary,
-    findings: input.report.findings,
-    scores: input.report.scores
-  });
+export async function saveSessionReview(review: Partial<SessionReview>) {
+  const { data, error } = await supabase
+    .from("session_reviews")
+    .upsert(review, { onConflict: "session_id" })
+    .select("id")
+    .single();
 
   if (error) throw error;
+  return data.id;
 }
 
-export async function loadLatestAiReport(organizationId: string): Promise<AiReport | null> {
+export async function saveTradeReview(review: Partial<TradeReview>) {
   const { data, error } = await supabase
-    .from("ai_reports")
-    .select("summary, findings, scores, created_at")
-    .eq("organization_id", organizationId)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+    .from("trade_reviews")
+    .upsert(review, { onConflict: "trade_event_id" })
+    .select("id")
+    .single();
 
   if (error) throw error;
-  return data as AiReport | null;
+  return data.id;
+}
+
+export async function loadSessionReviews(organizationId: string): Promise<SessionReview[]> {
+  const { data, error } = await supabase
+    .from("session_reviews")
+    .select("*")
+    .eq("organization_id", organizationId)
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+  return (data ?? []) as SessionReview[];
+}
+
+export async function loadTradeReviews(organizationId: string): Promise<TradeReview[]> {
+  const { data, error } = await supabase
+    .from("trade_reviews")
+    .select("*")
+    .eq("organization_id", organizationId)
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+  return (data ?? []) as TradeReview[];
 }

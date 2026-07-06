@@ -13,7 +13,13 @@ export async function signInWithEmail(email: string, password: string) {
 }
 
 export async function signUpWithEmail(email: string, password: string) {
-  const { error } = await supabase.auth.signUp({ email, password });
+  const { error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      emailRedirectTo: window.location.origin
+    }
+  });
   if (error) throw error;
 }
 

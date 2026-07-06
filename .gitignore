@@ -52,3 +52,4 @@ supabase/.branches/
 supabase/.temp/
 gen-hs256-token.js
 verify-supabase-auth.js
+.vercel

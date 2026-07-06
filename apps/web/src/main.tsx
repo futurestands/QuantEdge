@@ -16,7 +16,9 @@ import {
   User,
   RefreshCw,
   Terminal,
-  ShieldAlert
+  ShieldAlert,
+  Moon,
+  Sun
 } from "lucide-react";
 import { runSavedStrategyBacktest } from "./lib/backtester";
 import { generateCoachReport } from "./lib/coach";
@@ -81,29 +83,38 @@ import "./styles.css";
 
 // --- CONSTANTS ---
 const appTabs = [
-  { id: "dashboard", label: "Mission Control", icon: Gauge },
-  { id: "live", label: "Live Trade Center", icon: Activity },
-  { id: "thesis", label: "Market Thesis", icon: Terminal },
-  { id: "firewall", label: "Pre-Trade Gateway", icon: ShieldCheck },
-  { id: "journal", label: "Trading Journey", icon: BookOpen },
-  { id: "projects", label: "Research Library", icon: FolderKanban },
-  { id: "backtests", label: "Backtesting Lab", icon: Play },
-  { id: "builder", label: "Strategies", icon: Braces },
-  { id: "edge", label: "Edge Finder", icon: Activity },
-  { id: "optimization", label: "Optimization", icon: FastForward },
-  { id: "coach", label: "AI Coach", icon: Bot },
-  { id: "reports", label: "Command Center", icon: WalletCards },
-  { id: "risk", label: "Risk & Settings", icon: ShieldCheck },
-  { id: "discipline", label: "Discipline Guardian", icon: ShieldAlert },
-  { id: "imports", label: "Market Data", icon: CandlestickChart }
+  { id: "dashboard", label: "Dashboard", icon: Gauge, subtitle: "" },
+  { id: "live", label: "Live Trading", icon: Activity, subtitle: "" },
+  { id: "thesis", label: "Market Analysis", icon: Terminal, subtitle: "Develop and validate trading ideas" },
+  { id: "firewall", label: "Trade Checklist", icon: ShieldCheck, subtitle: "Powered by Execution Firewall™" },
+  { id: "journal", label: "Trading Journal", icon: BookOpen, subtitle: "Track your trades and improve discipline" },
+  { id: "projects", label: "Research", icon: FolderKanban, subtitle: "Projects, studies and trading ideas" },
+  { id: "backtests", label: "Backtesting", icon: Play, subtitle: "Test strategies using historical data" },
+  { id: "builder", label: "Strategy Builder", icon: Braces, subtitle: "Build and manage trading systems" },
+  { id: "edge", label: "Opportunities", icon: Activity, subtitle: "Find high probability market setups" },
+  { id: "optimization", label: "Strategy Optimizer", icon: FastForward, subtitle: "Improve strategy performance" },
+  { id: "coach", label: "AI Coach", icon: Bot, subtitle: "Personal trading mentor" },
+  { id: "reports", label: "Reports", icon: WalletCards, subtitle: "" },
+  { id: "risk", label: "Settings", icon: ShieldCheck, subtitle: "" },
+  { id: "performance", label: "Performance", icon: ShieldAlert, subtitle: "Powered by Discipline Guardian™" },
+  { id: "imports", label: "Market Data", icon: CandlestickChart, subtitle: "" }
 ] as const;
 
-type AppTab = typeof appTabs[number]["id"];
+type AppTab = "dashboard" | "live" | "thesis" | "firewall" | "journal" | "projects" | "backtests" | "builder" | "edge" | "optimization" | "coach" | "reports" | "risk" | "performance" | "imports";
+
 
 import { supabase } from "./lib/supabase";
 
 // --- MAIN APP ---
 function App() {
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+  }, [theme]);
+
+  const toggleTheme = () => setTheme(prev => prev === "dark" ? "light" : "dark");
+
   if (!supabase) {
     return (
       <div className="error-screen">
@@ -117,7 +128,7 @@ function App() {
     );
   }
 
-  const [mode, setMode] = useState<"landing" | "app">("app");
+  const [mode, setMode] = useState<"landing" | "app">("landing");
   const [activeTab, setActiveTab] = useState<AppTab>("dashboard");
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -183,6 +194,7 @@ function App() {
   const [userEmail, setUserEmail] = useState("");
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [orgName, setOrgName] = useState("");
   const [backtestProgress, setBacktestProgress] = useState<number | null>(null);
   const [backtestStatus, setBacktestStatus] = useState("");
@@ -197,31 +209,41 @@ function App() {
       setIsSignedIn(Boolean(session));
       if (session?.user?.email) {
         setUserEmail(session.user.email);
-        const data = await loadDashboardData();
-        setDashboard(data);
-        if (data.riskProfile) {
-          setRiskPlanName(data.riskProfile.name);
-          setDailyLossLimit(data.riskProfile.daily_loss_limit * 100);
-          setWeeklyLossLimit(data.riskProfile.weekly_loss_limit * 100);
-          setMaxDrawdownLimit(data.riskProfile.max_drawdown_limit * 100);
-          setRiskPlanRiskPerTrade(data.riskProfile.risk_per_trade * 100);
-          setPropFirm(data.riskProfile.prop_firm ?? "");
+        const dashData = await loadDashboardData();
+        setDashboard(dashData);
+        if (dashData.riskProfile) {
+          setRiskPlanName(dashData.riskProfile.name);
+          setDailyLossLimit(dashData.riskProfile.daily_loss_limit * 100);
+          setWeeklyLossLimit(dashData.riskProfile.weekly_loss_limit * 100);
+          setMaxDrawdownLimit(dashData.riskProfile.max_drawdown_limit * 100);
+          setRiskPlanRiskPerTrade(dashData.riskProfile.risk_per_trade * 100);
+          setPropFirm(dashData.riskProfile.prop_firm ?? "");
         }
         const marketOptions = await listImportedMarkets();
         setMarkets(marketOptions);
-        setSelectedStrategyId((current) => current || data.latestStrategy?.id || "");
+        setSelectedStrategyId((current) => current || dashData.latestStrategy?.id || "");
         const firstMarket = marketOptions[0];
         if (firstMarket && !selectedMarketKey) {
           setSelectedMarketKey(`${firstMarket.symbolId}:${firstMarket.timeframe}`);
           setBacktestStartAt(toDateInputValue(firstMarket.firstCandle));
           setBacktestEndAt(toDateInputValue(firstMarket.lastCandle));
         }
-        setMode("app");
+
+        // Auto-switch to app if they have an org, otherwise stay on landing
+        if (dashData.organization) {
+          setMode("app");
+        } else {
+          setMode("landing");
+        }
       } else {
         setDashboard(buildDemoDashboard());
+        setMode("landing");
       }
       setStatus(session ? "Terminal Active" : "Guest Node");
-    } catch (error) { setStatus("Error loading"); } finally { setIsLoading(false); }
+    } catch (error) {
+      setStatus("Error loading");
+      setMode("landing");
+    } finally { setIsLoading(false); }
   }
 
   useEffect(() => { void refresh(); }, []);
@@ -230,13 +252,35 @@ function App() {
   async function handleEmailSignIn(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setStatus("Signing in...");
-    try { await signInWithEmail(email, password); await refresh(); setIsAuthModalOpen(false); } catch (error) { setStatus("Sign in failed."); }
+    try {
+      await signInWithEmail(email, password);
+      await refresh();
+      setIsAuthModalOpen(false);
+    } catch (error) { setStatus("Sign in failed."); }
   }
 
-  async function handleEmailSignUp(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function handleEmailSignUp(onboardingData: {
+    experience: string;
+    style: string;
+    assets: string[];
+  }) {
+    setIsSubmitting(true);
     setStatus("Creating account...");
-    try { await signUpWithEmail(email, password); setStatus("Check your email."); } catch (error) { setStatus("Sign up failed."); }
+    try {
+      const { data, error } = await signUpWithEmail(email, password, onboardingData);
+      if (error) throw error;
+
+      if (data.session) {
+        await refresh();
+        setIsAuthModalOpen(false);
+      } else {
+        setStatus("Verification email sent. Please check your inbox.");
+      }
+    } catch (error: any) {
+      setStatus(error.message || "Sign up failed.");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   async function handleSignOut() { await signOut(); setIsSignedIn(false); setMode("landing"); setLastResult(null); setActiveProject(null); await refresh(); }
@@ -244,7 +288,17 @@ function App() {
   async function handleCreateOrg(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!orgName) return;
-    try { await createOrganization(orgName); await refresh(); } catch (error) { setStatus("Creation failed."); }
+    setIsSubmitting(true);
+    setStatus("Creating workspace...");
+    try {
+      await createOrganization(orgName);
+      await refresh();
+      setMode("app");
+    } catch (error: any) {
+      setStatus(error.message || "Creation failed.");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   async function handleRunBacktest() {
@@ -327,35 +381,146 @@ function App() {
   const drawdownStatus = latestDrawdown <= maxDrawdownLimit ? "Compliant" : "Breached";
   const selectedTrade = (lastResult?.trades.find((t:BacktestTradePayload) => (t.id ?? t.trade_index).toString() === selectedTradeId) as any) ?? data.backtestTrades.find((trade) => trade.id === selectedTradeId) ?? data.backtestTrades[0] ?? null;
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#07090d] flex flex-col items-center justify-center gap-4">
+        <RefreshCw className="text-mint animate-spin" size={40} />
+        <div className="text-center">
+          <h2 className="text-xl font-bold text-white tracking-tight">QuantEdge</h2>
+          <p className="text-slate-500 text-xs mt-1 font-mono uppercase tracking-widest">Initializing Terminal...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (mode === "landing") {
-    return <LandingView setMode={setMode} setIsAuthModalOpen={setIsAuthModalOpen} setAuthMode={setAuthMode} />;
+    return <LandingView
+      setMode={setMode}
+      setIsAuthModalOpen={setIsAuthModalOpen}
+      setAuthMode={setAuthMode}
+      isSignedIn={isSignedIn}
+    />;
   }
 
   if (isSignedIn && !data.organization) {
     return (
       <main className="min-h-screen bg-[#07090d] text-slate-100 grid place-items-center p-5">
         <section className="w-full max-w-md space-y-6">
-          <div className="text-center"><h1 className="text-2xl font-bold">Welcome to QuantEdge</h1><p className="text-slate-400 mt-2">Let's set up your workspace to get started.</p></div>
-          <div className="panel p-8"><form onSubmit={handleCreateOrg} className="tool-form"><label><span>Workspace Name</span><input value={orgName} onChange={(event) => setOrgName(event.target.value)} placeholder="e.g. My Trading Desk" required /></label><button className="primary-button full-button" type="submit">Create Workspace</button></form></div>
+          <div className="text-center">
+            <h1 className="text-3xl font-bold">Welcome to QuantEdge</h1>
+            <p className="text-slate-400 mt-2">Initialize your institutional workspace.</p>
+          </div>
+          <div className="panel p-8">
+            <form onSubmit={handleCreateOrg} className="tool-form">
+              <label>
+                <span>Workspace Name</span>
+                <input
+                  value={orgName}
+                  onChange={(event) => setOrgName(event.target.value)}
+                  placeholder="e.g. Alpha Trading Desk"
+                  required
+                  disabled={isSubmitting}
+                />
+              </label>
+              <button
+                className="primary-button full-button h-12"
+                type="submit"
+                disabled={isSubmitting || !orgName}
+              >
+                {isSubmitting ? <RefreshCw className="spin mr-2" size={16} /> : null}
+                {isSubmitting ? "Creating..." : "Create Workspace"}
+              </button>
+            </form>
+            <button
+              onClick={() => setMode("landing")}
+              className="w-full text-center text-xs text-muted hover:text-main transition mt-6 uppercase tracking-widest font-bold"
+            >
+              ← Back to Home
+            </button>
+            {status !== "Terminal Active" && (
+              <p className="text-center text-xs text-rose-400 mt-4 font-mono uppercase">{status}</p>
+            )}
+          </div>
         </section>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-ink text-slate-100 flex overflow-hidden">
-      <aside className="w-64 border-r border-line bg-[#0b0f16] flex flex-col py-6 shrink-0">
-        <div className="px-6 mb-10"><button onClick={() => setMode("landing")} className="flex items-center gap-2 group"><div className="w-8 h-8 bg-mint rounded flex items-center justify-center group-hover:rotate-12 transition"><Terminal size={18} className="text-ink" /></div><span className="text-lg font-bold">QuantEdge</span></button></div>
-        <nav className="flex-1 px-3 space-y-1 overflow-y-auto custom-scrollbar">{appTabs.map((tab) => { const Icon = tab.icon; return (<button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex items-center w-full gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === tab.id ? "bg-panel text-white border border-line" : "text-slate-400 hover:bg-panel hover:text-white"}`}><Icon size={18} className={activeTab === tab.id ? "text-mint" : ""} />{tab.label}</button>); })}</nav>
-        <div className="px-3 border-t border-line pt-6">{isSignedIn ? (<button onClick={handleSignOut} className="flex items-center w-full gap-3 px-4 py-3 rounded-lg text-sm font-medium text-slate-400 hover:bg-panel hover:text-white transition-colors"><LogOut size={18} /> Sign Out</button>) : (<button onClick={() => setIsAuthModalOpen(true)} className="flex items-center w-full gap-3 px-4 py-3 rounded-lg text-sm font-medium text-slate-400 hover:bg-panel hover:text-white transition-colors"><User size={18} /> Sign In</button>)}</div>
+    <main className="min-h-screen bg-ink text-main flex overflow-hidden">
+      <aside className="w-64 border-r border-line bg-sidebar flex flex-col shrink-0">
+        <div className="p-6">
+          <button onClick={() => setMode("landing")} className="flex items-center gap-2 group">
+            <div className="w-8 h-8 bg-mint rounded flex items-center justify-center group-hover:rotate-12 transition">
+              <Terminal size={18} className="text-white" />
+            </div>
+            <span className="text-lg font-bold text-main">QuantEdge</span>
+          </button>
+        </div>
+
+        <nav className="flex-1 px-3 space-y-1 overflow-y-auto custom-scrollbar">
+          {appTabs.map((tab) => {
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center w-full gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                  activeTab === tab.id
+                    ? "bg-panel text-main border border-line shadow-sm"
+                    : "text-muted hover:bg-panel hover:text-main"
+                }`}
+              >
+                <Icon size={18} className={activeTab === tab.id ? "text-mint" : ""} />
+                {tab.label}
+              </button>
+            );
+          })}
+        </nav>
+
+        <div className="p-4 space-y-2 border-t border-line bg-sidebar/50">
+          <button
+            onClick={toggleTheme}
+            className="flex items-center w-full gap-3 px-4 py-2.5 rounded-lg text-xs font-bold text-muted hover:bg-panel hover:text-main transition-colors uppercase tracking-widest"
+          >
+            {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+            {theme === "dark" ? "Light Mode" : "Dark Mode"}
+          </button>
+
+          {isSignedIn ? (
+            <button
+              onClick={handleSignOut}
+              className="flex items-center w-full gap-3 px-4 py-2.5 rounded-lg text-xs font-bold text-rose-400 hover:bg-rose-500/10 transition-colors uppercase tracking-widest"
+            >
+              <LogOut size={16} /> Sign Out
+            </button>
+          ) : (
+            <button
+              onClick={() => setIsAuthModalOpen(true)}
+              className="flex items-center w-full gap-3 px-4 py-2.5 rounded-lg text-xs font-bold text-mint hover:bg-mint/10 transition-colors uppercase tracking-widest"
+            >
+              <User size={16} /> Sign In
+            </button>
+          )}
+        </div>
       </aside>
 
       <section className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <header className="flex min-h-16 items-center justify-between border-b border-line bg-ink/90 px-8 backdrop-blur z-20">
-          <div className="flex items-center gap-4"><h2 className="text-lg font-semibold capitalize">{activeTab.replace("-", " ")}</h2>{!isSignedIn && <span className="bg-panel border border-line px-2 py-0.5 rounded text-[10px] uppercase tracking-wider text-slate-500 font-bold">Demo Mode</span>}</div>
+        <header className="flex min-h-20 items-center justify-between border-b border-line bg-ink/90 px-8 backdrop-blur z-20">
+          <div className="flex items-center gap-4">
+            <div>
+              <h2 className="text-lg font-semibold text-main">{appTabs.find(t => t.id === activeTab)?.label}</h2>
+              {appTabs.find(t => t.id === activeTab)?.subtitle && (
+                <p className="text-[10px] text-muted font-bold uppercase tracking-widest mt-0.5">
+                  {appTabs.find(t => t.id === activeTab)?.subtitle}
+                </p>
+              )}
+            </div>
+            {!isSignedIn && <span className="bg-panel border border-line px-2 py-0.5 rounded text-[10px] uppercase tracking-wider text-muted font-bold">Demo Mode</span>}
+          </div>
           <div className="flex items-center gap-2">
             <button className="icon-button" onClick={refresh} disabled={isLoading}><RefreshCw size={18} className={isLoading ? "spin" : ""} /></button>
-            {isSignedIn && <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-panel border border-line ml-2"><div className="w-5 h-5 rounded-full bg-mint flex items-center justify-center text-[10px] text-ink font-bold">{userEmail[0]?.toUpperCase()}</div><span className="text-xs font-medium text-slate-300">{userEmail.split('@')[0]}</span></div>}
+            {isSignedIn && <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-panel border border-line ml-2"><div className="w-5 h-5 rounded-full bg-mint flex items-center justify-center text-[10px] text-white font-bold">{userEmail[0]?.toUpperCase()}</div><span className="text-xs font-medium text-dim">{userEmail.split('@')[0]}</span></div>}
             <button className="primary-button ml-2" onClick={() => { setActiveTab("backtests"); setLastResult(null); setActiveProject(null); }}><Play size={16} /> New Backtest</button>
           </div>
         </header>
@@ -366,8 +531,8 @@ function App() {
             {activeTab === "live" && <LiveTradeCenter />}
             {activeTab === "thesis" && <MarketThesisWorkspace data={data} refresh={refresh} />}
             {activeTab === "firewall" && <FirewallDashboard data={data} refresh={refresh} />}
-            {activeTab === "projects" && <ResearchLibrary data={data} onSelectProject={(p:any) => { setActiveProject(p); setActiveTab("backtests"); }} />}
-            {activeTab === "discipline" && <DisciplineView data={data} refresh={refresh} />}
+            {activeTab === "projects" && <ResearchLibrary data={data} onSelectProject={(p:any) => { setActiveProject(p); setActiveTab("backtests"); }} onNavigate={setActiveTab} />}
+            {activeTab === "performance" && <DisciplineView data={data} refresh={refresh} />}
             {activeTab === "builder" && <BuilderView data={data} strategyName={strategyName} setStrategyName={setStrategyName} direction={direction} setDirection={setDirection} sessionFilter={sessionFilter} setSessionFilter={setSessionFilter} emaFast={emaFast} setEmaFast={setEmaFast} emaSlow={emaSlow} setEmaSlow={setEmaSlow} rsiPeriod={rsiPeriod} setRsiPeriod={setRsiPeriod} rsiMax={rsiMax} setRsiMax={setRsiMax} stopLossAtr={stopLossAtr} setStopLossAtr={setStopLossAtr} takeProfitRr={takeProfitRr} setTakeProfitRr={setTakeProfitRr} riskPerTrade={riskPerTrade} setRiskPerTrade={setRiskPerTrade} initialBalance={initialBalance} setInitialBalance={setInitialBalance} entryRule={entryRule} setEntryRule={setEntryRule} exitRule={exitRule} setExitRule={setExitRule} onSubmit={handleCreateStrategy} />}
             {activeTab === "backtests" && (<BacktestingLab data={data} markets={markets} isRunning={isRunning} onSubmit={handleRunBacktest} selectedStrategyId={selectedStrategyId} setSelectedStrategyId={setSelectedStrategyId} selectedMarketKey={selectedMarketKey} setSelectedMarketKey={setSelectedMarketKey} backtestStartAt={backtestStartAt} setBacktestStartAt={setBacktestStartAt} backtestEndAt={backtestEndAt} setBacktestEndAt={setBacktestEndAt} progress={backtestProgress} statusMessage={backtestStatus} lastResult={lastResult} setLastResult={setLastResult} isSignedIn={isSignedIn} onAuthRequired={() => setIsAuthModalOpen(true)} initialBalance={initialBalance} setInitialBalance={setInitialBalance} riskPerTrade={riskPerTrade} setRiskPerTrade={setRiskPerTrade} commission={commissionPerTrade} setCommission={setCommissionPerTrade} spread={spread} setSpread={setSpread} slippage={slippage} setSlippage={setSlippage} direction={direction} setDirection={setDirection} setActiveTab={setActiveTab} activeProject={activeProject} handleUpdateProjectStatus={handleUpdateProjectStatus} notes={projectNotes} setNotes={setProjectNotes} onSaveNotes={() => { if(activeProject) saveResearchProjectNotes(activeProject.id, projectNotes); }} formatMetric={formatMetric} />)}
             {activeTab === "imports" && <ImportsView csvSymbol={csvSymbol} setCsvSymbol={setCsvSymbol} csvTimeframe={csvTimeframe} setCsvTimeframe={setCsvTimeframe} setCsvFile={setCsvFile} handleCandleImport={handleCandleImport} setTradeCsvFile={setTradeCsvFile} handleTradeImport={handleTradeImport} />}

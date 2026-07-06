@@ -47,10 +47,10 @@ export const LiveTradeCenter: React.FC = () => {
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-700">
       <header className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <Activity className="text-mint" /> Live Trade Center
+          <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+            <Activity className="text-mint" /> Live Trading
           </h1>
-          <p className="text-slate-400 text-sm">Real-time execution and monitoring engine.</p>
+          <p className="text-slate-400 mt-1">Real-time execution and monitoring. <span className="text-[10px] text-slate-600 font-bold uppercase tracking-widest ml-2">Broker Engine™</span></p>
         </div>
         <div className="flex gap-3">
           <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-800/50 rounded-full border border-slate-700/50">

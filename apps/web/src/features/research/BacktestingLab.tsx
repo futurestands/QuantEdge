@@ -28,7 +28,13 @@ export const BacktestingLab = ({ data, markets, isRunning, onSubmit, selectedStr
 
   return (
     <div className="max-w-5xl mx-auto space-y-8 pb-20">
-      <div className="flex items-center justify-between"><div><h1 className="text-3xl font-bold tracking-tight flex items-center gap-3"><Terminal className="text-mint" /> Research Laboratory</h1><p className="text-slate-400">Institutional-grade research workflow.</p></div><div className="flex items-center gap-2 px-4 py-2 bg-panel border border-line rounded-lg text-xs font-mono"><Layers size={14} className="text-mint" /> STEP {step} / 6</div></div>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3"><Terminal className="text-mint" /> Backtesting</h1>
+          <p className="text-slate-400 mt-1">Test strategies using historical data. <span className="text-[10px] text-slate-600 font-bold uppercase tracking-widest ml-2">Optimization Engine™</span></p>
+        </div>
+        <div className="flex items-center gap-2 px-4 py-2 bg-panel border border-line rounded-lg text-xs font-mono"><Layers size={14} className="text-mint" /> STEP {step} / 6</div>
+      </div>
       <div className="grid grid-cols-6 gap-2">{Array.from({ length: 6 }).map((_, i) => (<div key={i} className={`h-1.5 rounded-full transition-all duration-500 ${step > i ? "bg-mint shadow-[0_20px_50px_rgba(53,208,163,0.4)]" : "bg-panel border border-line"}`} />))}</div>
       <div className="panel p-10 space-y-8 shadow-2xl relative overflow-hidden bg-gradient-to-b from-[#10141d] to-[#0b0f16]">
         {step === 1 && (<div className="space-y-8 animate-in slide-in-from-right-4">
@@ -57,9 +63,9 @@ export const BacktestingLab = ({ data, markets, isRunning, onSubmit, selectedStr
           <div className="flex justify-between border-t border-line pt-6"><button className="secondary-button h-12" onClick={() => setStep(4)}>Previous</button><button className="primary-button h-12" onClick={() => setStep(6)}>Review</button></div>
         </div>)}
         {step === 6 && (<div className="space-y-8 animate-in slide-in-from-right-4">
-          <div className="flex items-center gap-4"><Zap className="text-mint" size={28} /><div><h3 className="text-xl font-bold">Launch Research</h3><p className="text-sm text-slate-400">Review validation.</p></div></div>
+          <div className="flex items-center gap-4"><Zap className="text-mint" size={28} /><div><h3 className="text-xl font-bold">Run Backtest</h3><p className="text-sm text-slate-400">Review validation.</p></div></div>
           <div className="grid sm:grid-cols-4 gap-4"><LabPreviewItem label="Symbol" value={selectedMarket?.symbol} icon={Search} /><LabPreviewItem label="Algorithm" value={selectedStrategy?.name} icon={Braces} /><LabPreviewItem label="Candles" value={selectedMarket?.candleCount.toLocaleString()} icon={History} /><LabPreviewItem label="Capital" value={formatMetric(initialBalance)} icon={WalletCards} /></div>
-          <div className="flex justify-between border-t border-line pt-6"><button className="secondary-button h-14" onClick={() => setStep(5)}>Previous</button><button className="primary-button h-14 px-12 text-lg font-bold shadow-2xl shadow-mint/30" onClick={() => isSignedIn ? onSubmit() : onAuthRequired()} disabled={!canRun}>Launch Research Simulation <Zap className="ml-3" size={20} /></button></div>
+          <div className="flex justify-between border-t border-line pt-6"><button className="secondary-button h-14" onClick={() => setStep(5)}>Previous</button><button className="primary-button h-14 px-12 text-lg font-bold shadow-2xl shadow-mint/30" onClick={() => isSignedIn ? onSubmit() : onAuthRequired()} disabled={!canRun}>Run Backtest <Zap className="ml-3" size={20} /></button></div>
         </div>)}
       </div>
     </div>

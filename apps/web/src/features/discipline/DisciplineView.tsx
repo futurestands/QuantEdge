@@ -6,8 +6,13 @@ export const DisciplineView = ({ data, refresh }: any) => {
   const activePlan = data.tradingPlans?.find((p: any) => p.is_active);
 
   return (
-    <div className="grid gap-6 lg:grid-cols-2 animate-in fade-in duration-500">
-      <div className="space-y-6">
+    <div className="space-y-6 animate-in fade-in duration-500">
+      <header>
+        <h1 className="text-3xl font-bold tracking-tight">Performance</h1>
+        <p className="text-slate-400 mt-1">Track your consistency and adherence to rules. <span className="text-[10px] text-slate-600 font-bold uppercase tracking-widest ml-2">Powered by Discipline Guardian™</span></p>
+      </header>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <div className="space-y-6">
         <PlanBuilder organizationId={data.organization?.id} onPlanCreated={refresh} />
         {activePlan && (
           <article className="panel p-8 bg-mint/5 border-mint/20">
@@ -19,7 +24,7 @@ export const DisciplineView = ({ data, refresh }: any) => {
           </article>
         )}
       </div>
-      <SessionGuard activeSession={data.activeSession} tradingPlan={activePlan} organizationId={data.organization?.id} onUpdate={refresh} />
     </div>
-  );
+  </div>
+);
 };

@@ -2,9 +2,14 @@ import React from "react";
 import { Plus, Braces } from "lucide-react";
 
 export const BuilderView = ({ data, strategyName, setStrategyName, direction, setDirection, sessionFilter, setSessionFilter, emaFast, setEmaFast, emaSlow, setEmaSlow, rsiPeriod, setRsiPeriod, rsiMax, setRsiMax, stopLossAtr, setStopLossAtr, takeProfitRr, setTakeProfitRr, riskPerTrade, setRiskPerTrade, initialBalance, setInitialBalance, entryRule, setEntryRule, exitRule, setExitRule, onSubmit }: any) => (
-  <section className="grid gap-6 xl:grid-cols-[1fr_1fr] animate-in fade-in duration-500">
-    <article className="panel">
-      <div className="panel-heading"><div><p>Strategy Builder</p><h2>New Strategy</h2></div><Plus size={21} /></div>
+  <section className="space-y-6 animate-in fade-in duration-500 text-main">
+    <header>
+      <h1 className="text-3xl font-bold tracking-tight">Strategy Builder</h1>
+      <p className="text-muted mt-1">Build and manage trading systems. <span className="text-[10px] text-slate-600 font-bold uppercase tracking-widest ml-2">Broker Engine™</span></p>
+    </header>
+    <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
+      <article className="panel">
+        <div className="panel-heading"><div><p>Configuration</p><h2>New Strategy</h2></div><Plus size={21} /></div>
       <form className="tool-form" onSubmit={onSubmit}>
         <label><span>Name</span><input value={strategyName} onChange={e => setStrategyName(e.target.value)} required /></label>
         <div className="form-grid"><label><span>Side</span><select value={direction} onChange={e => setDirection(e.target.value)}><option value="long">Long</option><option value="short">Short</option></select></label><label><span>Session</span><select value={sessionFilter} onChange={e => setSessionFilter(e.target.value)}><option value="any">Any</option><option value="london">London</option><option value="new_york">New York</option></select></label></div>
@@ -16,7 +21,8 @@ export const BuilderView = ({ data, strategyName, setStrategyName, direction, se
     </article>
     <article className="panel">
       <div className="panel-heading"><div><p>Vault</p><h2>Saved Strategies</h2></div><Braces size={21} /></div>
-      <div className="strategy-list">{data.strategies.length ? data.strategies.map((s: any) => (<div className="strategy-row" key={s.id}><strong>{s.name}</strong><span>{s.language}</span><code>{String(s.rules.entry)}</code></div>)) : <div className="empty-state py-20 text-center">No strategies found.</div>}</div>
+      <div className="strategy-list">{data.strategies.length ? data.strategies.map((s: any) => (<div className="strategy-row" key={s.id}><strong className="text-main">{s.name}</strong><span className="text-muted">{s.language}</span><code className="text-dim">{String(s.rules.entry)}</code></div>)) : <div className="empty-state py-20 text-center text-muted">No strategies found.</div>}</div>
     </article>
-  </section>
+  </div>
+</section>
 );

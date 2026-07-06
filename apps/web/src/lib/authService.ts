@@ -12,15 +12,38 @@ export async function signInWithEmail(email: string, password: string) {
   if (error) throw error;
 }
 
-export async function signUpWithEmail(email: string, password: string) {
-  const { error } = await supabase.auth.signUp({
+export async function signUpWithEmail(email: string, password: string, onboardingData?: {
+  experience: string;
+  style: string;
+  assets: string[];
+}) {
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      emailRedirectTo: window.location.origin
+      emailRedirectTo: window.location.origin,
+      data: {
+        experience_level: onboardingData?.experience,
+        trading_style: onboardingData?.style,
+        preferred_assets: onboardingData?.assets
+      }
     }
   });
+
   if (error) throw error;
+
+  // Initialize preferences if the user was created successfully
+  if (data.user && onboardingData) {
+    const { error: prefError } = await supabase.from("user_preferences").upsert({
+      user_id: data.user.id,
+      experience_level: onboardingData.experience,
+      trading_style: onboardingData.style,
+      preferred_assets: onboardingData.assets
+    });
+    if (prefError) console.error("Failed to save onboarding preferences", prefError);
+  }
+
+  return data;
 }
 
 export async function signInWithProvider(provider: "google" | "github") {
@@ -38,7 +61,7 @@ export async function signOut() {
 
 export async function createOrganization(name: string) {
   const session = await getSession();
-  if (!session) throw new Error("Sign in before creating an organization.");
+  if (!session) throw new Error("Sign in required.");
 
   const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
   const { data: org, error: orgError } = await supabase
@@ -73,7 +96,13 @@ export async function loadPrimaryOrganization(): Promise<Organization | null> {
 
   if (error) throw error;
 
-  const organization = data?.organizations as Organization | Organization[] | undefined;
-  if (Array.isArray(organization)) return organization[0] ?? null;
-  return organization ?? null;
+  // Supabase returns an object for 1-to-1 or many-to-1 joins
+  const organization = data?.organizations as any;
+  if (!organization) return null;
+
+  if (Array.isArray(organization)) {
+    return organization[0] ? { id: organization[0].id, name: organization[0].name } : null;
+  }
+
+  return { id: organization.id, name: organization.name };
 }

@@ -2,14 +2,17 @@ import React, { useState } from "react";
 import { FolderKanban, Star, MoreVertical } from "lucide-react";
 import { ScoreBadge } from "../../components/ui/Metrics";
 
-export const ResearchLibrary = ({ data, onSelectProject }: any) => {
+export const ResearchLibrary = ({ data, onSelectProject, onNavigate }: any) => {
   const [filter, setFilter] = useState("all");
   const filteredProjects = (data.researchProjects || []).filter((p:any) => filter === 'all' || p.status === filter);
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 max-w-7xl mx-auto">
        <div className="flex justify-between items-center">
-          <div><h1 className="text-3xl font-bold tracking-tight">Research Library</h1><p className="text-slate-400">Institutional repository of your algorithmic research.</p></div>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Research</h1>
+            <p className="text-slate-400 mt-1">Projects, studies and trading ideas. <span className="text-[10px] text-slate-600 font-bold uppercase tracking-widest ml-2">Intelligence Layer™</span></p>
+          </div>
           <div className="flex gap-3">
              <div className="flex p-1 bg-panel rounded-xl border border-line">
                 {['all', 'live_ready', 'approved'].map(f => (
@@ -40,7 +43,11 @@ export const ResearchLibrary = ({ data, onSelectProject }: any) => {
           )) : (
             <div className="panel py-40 text-center space-y-6 bg-mint/5 border-dashed border-mint/20 rounded-3xl">
                <div className="w-20 h-20 bg-panel border border-line rounded-full flex items-center justify-center mx-auto text-slate-500"><FolderKanban size={32} /></div>
-               <div className="space-y-2"><h2 className="text-xl font-bold">Research library is empty</h2><p className="text-slate-500 max-w-xs mx-auto">Launch your first simulation to initialize the research workflow.</p></div>
+               <div className="space-y-2">
+                 <h2 className="text-xl font-bold">You haven't created any research yet.</h2>
+                 <p className="text-slate-500 max-w-xs mx-auto mb-6">Launch your first simulation to initialize the research workflow.</p>
+                 <button onClick={() => onNavigate("backtests")} className="primary-button">Create Research</button>
+               </div>
             </div>
           )}
        </div>

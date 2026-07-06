@@ -5,15 +5,18 @@ export default {
   theme: {
     extend: {
       colors: {
-        ink: "#07090d",
-        panel: "#10141d",
-        line: "#263142",
-        mint: "#35d0a3",
-        amber: "#f5ba45",
-        danger: "#ef5d68"
+        ink: "var(--bg-ink)",
+        panel: "var(--bg-panel)",
+        sidebar: "var(--bg-sidebar)",
+        line: "var(--border-line)",
+        mint: "var(--mint)",
+        amber: "var(--warning)",
+        danger: "var(--danger)",
+        main: "var(--text-main)",
+        muted: "var(--text-muted)",
+        dim: "var(--text-dim)"
       }
     }
   },
   plugins: []
 } satisfies Config;
-

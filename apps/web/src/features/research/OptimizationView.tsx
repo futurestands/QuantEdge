@@ -34,10 +34,10 @@ export const OptimizationView = ({ data, refresh }: { data: DashboardData; refre
     <div className="space-y-6 animate-in fade-in duration-500">
       <header className="flex justify-between items-center">
         <div>
-          <h2 className="text-xl font-bold flex items-center gap-2">
-            <FastForward className="text-mint" /> Optimization Engine
-          </h2>
-          <p className="text-slate-500 text-sm">Hyper-parameter tuning for strategy robustness.</p>
+          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
+            <FastForward className="text-mint" /> Strategy Optimizer
+          </h1>
+          <p className="text-slate-400 mt-1">Improve strategy performance. <span className="text-[10px] text-slate-600 font-bold uppercase tracking-widest ml-2">Optimization Engine™</span></p>
         </div>
       </header>
 

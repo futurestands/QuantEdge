@@ -140,7 +140,7 @@ function buildEmptyDashboard(message: string): DashboardData {
     metrics: [metric("Net Profit", "$0", "waiting", "neutral"), metric("Win Rate", "0%", "waiting", "neutral"), metric("Profit Factor", "0.00", "waiting", "neutral"), metric("Max Drawdown", "0%", "waiting", "neutral")],
     equity: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(day => ({ day, value: 10000 })),
     heatmap: [["London", "0R", "0%", "$0"], ["New York", "0R", "0%", "$0"], ["Asian", "0R", "0%", "$0"], ["Overlap", "0R", "0%", "$0"]],
-    aiSummary: message, scores: [["Discipline", 0], ["Execution", 0], ["Robustness", 0]],
+    aiSummary: message, scores: [["Trading Discipline", 0], ["Execution Quality", 0], ["Robustness", 0]],
     strategies: [], backtestTrades: [], journals: [], riskProfile: null, optimizationRuns: [], researchProjects: [], tradingPlans: [], activeSession: null, activeThesis: null,
     aiReports: [], disciplineScores: [], sessionReviews: [], tradeReviews: []
   };
@@ -173,7 +173,7 @@ function buildHeatmap(trades: TradeRow[]) {
 }
 
 function normalizeScores(scores?: Record<string, unknown>) {
-  return [["Discipline", Number(scores?.discipline ?? scores?.discipline_score ?? 0)], ["Execution", Number(scores?.execution ?? scores?.execution_score ?? 0)], ["Robustness", Number(scores?.robustness ?? scores?.robustness_score ?? 0)]] as Array<[string, number]>;
+  return [["Trading Discipline", Number(scores?.discipline ?? scores?.discipline_score ?? 0)], ["Execution Quality", Number(scores?.execution ?? scores?.execution_score ?? 0)], ["Robustness", Number(scores?.robustness ?? scores?.robustness_score ?? 0)]] as Array<[string, number]>;
 }
 
 function metric(label: string, value: string, delta: string, status: Metric["status"]): Metric { return { label, value, delta, status }; }

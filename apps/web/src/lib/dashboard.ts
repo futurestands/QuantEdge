@@ -6,7 +6,7 @@ import { loadTrades, loadJournals } from "./journalService";
 import { loadOptimizationRuns } from "./optimizationService";
 import { loadLatestAiReport } from "./reviewService";
 import { loadTradingPlans, loadActiveSessions, loadActiveThesis } from "./disciplineService";
-import type { DashboardData, Organization, TradeRow, Metric } from "./types";
+import type { DashboardData, Organization, TradeRow, Metric, AiReport, BacktestRow, BacktestTradeRow, JournalRow, RiskProfile, OptimizationRun, ResearchProject, TradingPlan, TradeSession, MarketThesis } from "./types";
 
 export * from "./authService";
 export * from "./researchService";
@@ -68,14 +68,18 @@ export async function createOrganization(name: string) {
 async function loadPrimaryOrganization(): Promise<Organization | null> {
   const { data, error } = await supabase.from("organization_members").select("organization_id, organizations(id, name)").limit(1).maybeSingle();
   if (error) throw error;
-  const organization = data?.organizations as Organization | Organization[] | undefined;
-  return Array.isArray(organization) ? organization[0] ?? null : organization ?? null;
+  const org = data?.organizations as Organization | Organization[] | undefined;
+  return Array.isArray(org) ? org[0] ?? null : org ?? null;
 }
 
-function buildDashboard(organization: Organization, trades: TradeRow[], backtests: any[], strategies: any[], report: any, backtestTrades: any[], journals: any[], riskProfile: any, optimizationRuns: any[], researchProjects: any[], tradingPlans: any[], activeSession: any, activeThesis: any): DashboardData {
+function buildDashboard(
+  organization: Organization, trades: TradeRow[], backtests: BacktestRow[], strategies: any[], report: AiReport | null,
+  backtestTrades: BacktestTradeRow[], journals: JournalRow[], riskProfile: RiskProfile | null, optimizationRuns: OptimizationRun[],
+  researchProjects: ResearchProject[], tradingPlans: TradingPlan[], activeSession: TradeSession | null, activeThesis: MarketThesis | null
+): DashboardData {
   const latestBacktest = backtests[0];
   const metricsFromBacktest = latestBacktest?.metrics ?? {};
-  const netProfit = Number(metricsFromBacktest.net_profit ?? sum(trades.map(t => Number(t.pnl ?? 0))));
+  const netProfit = Number(metricsFromBacktest.net_profit ?? sum(trades.map((trade) => Number(trade.pnl ?? 0))));
   const tradeCount = Number(metricsFromBacktest.trade_count ?? trades.length);
   const winRate = Number(metricsFromBacktest.win_rate ?? (trades.length ? trades.filter(t => Number(t.pnl ?? 0) > 0).length / trades.length : 0));
   const profitFactor = Number(metricsFromBacktest.profit_factor ?? 0);
@@ -84,14 +88,14 @@ function buildDashboard(organization: Organization, trades: TradeRow[], backtest
   return {
     organization, latestStrategy: strategies[0] ?? null, latestBacktest: latestBacktest ?? null,
     metrics: [
-      metric("Net Profit", formatCurrency(netProfit), `${tradeCount} trades`, "positive"),
-      metric("Win Rate", formatPercent(winRate), `Ratio`, winRate >= 0.5 ? "positive" : "danger"),
-      metric("Profit Factor", profitFactor.toFixed(2), "latest", profitFactor >= 1.2 ? "positive" : "neutral"),
-      metric("Expectancy", formatCurrency(expectancy), "Per Trade", expectancy > 0 ? "positive" : "danger")
+      { label: "Net Profit", value: formatCurrency(netProfit), delta: `${tradeCount} trades`, status: "positive" },
+      { label: "Win Rate", value: formatPercent(winRate), delta: `Ratio`, status: winRate >= 0.5 ? "positive" : "danger" },
+      { label: "Profit Factor", value: profitFactor.toFixed(2), delta: "latest", status: profitFactor >= 1.2 ? "positive" : "neutral" },
+      { label: "Expectancy", value: formatCurrency(expectancy), delta: "Per Trade", status: expectancy > 0 ? "positive" : "danger" }
     ],
     equity: buildEquityCurve(trades, netProfit),
     heatmap: buildHeatmap(trades),
-    aiSummary: report?.summary ?? "Run a backtest and save it to generate your first AI performance review.",
+    aiSummary: report?.summary ?? "Run a backtest to see AI coaching insights.",
     scores: normalizeScores(report?.scores),
     strategies, backtestTrades, journals, riskProfile, optimizationRuns, researchProjects, tradingPlans, activeSession, activeThesis
   };
@@ -100,7 +104,7 @@ function buildDashboard(organization: Organization, trades: TradeRow[], backtest
 function buildEmptyDashboard(message: string): DashboardData {
   return {
     organization: null, latestStrategy: null, latestBacktest: null,
-    metrics: [metric("Net Profit", "$0", "waiting", "neutral"), metric("Win Rate", "0%", "waiting", "neutral"), metric("Profit Factor", "0.00", "waiting", "neutral"), metric("Max Drawdown", "0%", "waiting", "neutral")],
+    metrics: [{ label: "Net Profit", value: "$0", delta: "waiting", status: "neutral" }, { label: "Win Rate", value: "0%", delta: "waiting", status: "neutral" }, { label: "Profit Factor", value: "0.00", delta: "waiting", status: "neutral" }, { label: "Max Drawdown", value: "0%", delta: "waiting", status: "neutral" }],
     equity: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(day => ({ day, value: 10000 })),
     heatmap: [["London", "0R", "0%", "$0"], ["New York", "0R", "0%", "$0"], ["Asian", "0R", "0%", "$0"], ["Overlap", "0R", "0%", "$0"]],
     aiSummary: message, scores: [["Discipline", 0], ["Execution", 0], ["Robustness", 0]],
@@ -109,7 +113,10 @@ function buildEmptyDashboard(message: string): DashboardData {
 }
 
 function buildEquityCurve(trades: TradeRow[], fallbackNetProfit: number) {
-  if (!trades.length) return ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day, i) => ({ day, value: Math.round(10000 + (fallbackNetProfit / 6) * i) }));
+  if (!trades.length) {
+    const step = fallbackNetProfit / 6;
+    return ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day, index) => ({ day, value: Math.round(10000 + step * index) }));
+  }
   let equity = 10000;
   const buckets = new Map<string, number>();
   for (const t of trades) {
@@ -117,20 +124,27 @@ function buildEquityCurve(trades: TradeRow[], fallbackNetProfit: number) {
     equity += Number(t.pnl ?? 0);
     buckets.set(day, equity);
   }
-  return ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(day => ({ day, value: Math.round(buckets.get(day) ?? equity) }));
+  return ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => ({ day, value: Math.round(buckets.get(day) ?? equity) }));
 }
 
 function buildHeatmap(trades: TradeRow[]) {
-  return ["London", "New York", "Asian", "Overlap"].map(session => {
-    const sTrades = trades.filter(t => (t.session ?? "Unknown").toLowerCase() === session.toLowerCase());
-    const pnl = sum(sTrades.map(t => Number(t.pnl ?? 0)));
-    const wr = sTrades.length ? sTrades.filter(t => Number(t.pnl ?? 0) > 0).length / sTrades.length : 0;
-    return [session, `${(sTrades.length ? pnl / Math.max(sTrades.length * 100, 1) : 0).toFixed(1)}R`, formatPercent(wr), formatCurrency(pnl)];
+  return ["London", "New York", "Asian", "Overlap"].map((session) => {
+    const sessionTrades = trades.filter((trade) => (trade.session ?? "Unknown").toLowerCase() === session.toLowerCase());
+    const pnl = sum(sessionTrades.map((trade) => Number(trade.pnl ?? 0)));
+    const wins = sessionTrades.filter((trade) => Number(trade.pnl ?? 0) > 0).length;
+    const winRate = sessionTrades.length ? wins / sessionTrades.length : 0;
+    const averageR = sessionTrades.length ? pnl / Math.max(sessionTrades.length * 100, 1) : 0;
+    return [session, `${averageR.toFixed(1)}R`, formatPercent(winRate), formatCurrency(pnl)];
   });
 }
 
-function normalizeScores(s?: any) { return [["Discipline", Number(s?.discipline ?? 0)], ["Execution", Number(s?.execution ?? 0)], ["Robustness", Number(s?.robustness ?? 0)]] as any; }
-function metric(label: string, value: string, delta: string, status: Metric["status"]): Metric { return { label, value, delta, status }; }
-function sum(values: number[]) { return values.reduce((t, v) => t + v, 0); }
+function normalizeScores(scores?: any) {
+  return [["Discipline", Number(scores?.discipline ?? 0)], ["Execution", Number(scores?.execution ?? 0)], ["Robustness", Number(scores?.robustness ?? 0)]] as Array<[string, number]>;
+}
+
+function sum(values: number[]) { return values.reduce((total, value) => total + value, 0); }
 function formatCurrency(v: number) { return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(v); }
-function formatPercent(v: number) { return new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 1 }).format(Math.abs(v) <= 1 ? v : v / 100); }
+function formatPercent(v: number) {
+  const n = Math.abs(v) <= 1 ? v : v / 100;
+  return new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 1 }).format(n);
+}

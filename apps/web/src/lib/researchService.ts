@@ -152,7 +152,7 @@ export async function loadBacktests(organizationId: string): Promise<BacktestRow
 
 export async function loadBacktestTrades(backtestId: string): Promise<BacktestTradeRow[]> {
   const { data, error } = await supabase
-    .from("backtest_trades")
+    .from("trade_events")
     .select("id, backtest_id, trade_index, payload")
     .eq("backtest_id", backtestId)
     .order("trade_index", { ascending: true })

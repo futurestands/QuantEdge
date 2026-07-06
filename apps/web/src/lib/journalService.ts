@@ -45,7 +45,7 @@ export async function loadJournals(organizationId: string): Promise<JournalRow[]
     .limit(200);
 
   if (error) throw error;
-  return (data ?? []).map(row => ({
+  return (data ?? []).map((row: any) => ({
     ...row,
     notes: row.content
   })) as JournalRow[];

@@ -100,8 +100,23 @@ const appTabs = [
 
 type AppTab = typeof appTabs[number]["id"];
 
+import { supabase } from "./lib/supabase";
+
 // --- MAIN APP ---
 function App() {
+  if (!supabase) {
+    return (
+      <div className="error-screen">
+        <section>
+          <p>QuantEdge System Error</p>
+          <h1>Configuration Missing</h1>
+          <span>Environment variables (VITE_SUPABASE_URL) are not set in Vercel.</span>
+          <button type="button" onClick={() => window.location.reload()}>Retry Connection</button>
+        </section>
+      </div>
+    );
+  }
+
   const [mode, setMode] = useState<"landing" | "app">("app");
   const [activeTab, setActiveTab] = useState<AppTab>("dashboard");
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);

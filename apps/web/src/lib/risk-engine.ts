@@ -37,7 +37,7 @@ export class RealTimeRiskEngine {
 
     if (!liveAccount) throw new Error("Live account data not found");
 
-    const totalExposure = (positions || []).reduce((sum, pos) => sum + (pos.lot_size * pos.current_price), 0);
+    const totalExposure = (positions || []).reduce((sum: number, pos: any) => sum + (pos.lot_size * pos.current_price), 0);
     const exposurePercent = (totalExposure / liveAccount.equity) * 100;
 
     const metrics: RiskMetrics = {

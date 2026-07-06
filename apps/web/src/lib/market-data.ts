@@ -104,7 +104,7 @@ export async function loadCandlesForBacktest(symbolId: string, timeframe: string
     throw error;
   }
 
-  return (data ?? []).map((row) => ({
+  return (data ?? []).map((row: any) => ({
     time: row.ts as string,
     open: Number(row.open),
     high: Number(row.high),

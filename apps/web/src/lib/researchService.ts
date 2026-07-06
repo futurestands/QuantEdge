@@ -266,7 +266,7 @@ export async function loadTrades(organizationId: string): Promise<TradeRow[]> {
     .limit(500);
 
   if (error) throw error;
-  return (data ?? []).map(row => ({
+  return (data ?? []).map((row: any) => ({
     ...row,
     side: row.direction,
     entry_time: row.created_at,

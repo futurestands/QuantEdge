@@ -4,19 +4,17 @@ import { OpenPositionsPanel } from "./OpenPositionsPanel";
 import { OrdersPanel } from "./OrdersPanel";
 import { ExposurePanel } from "./ExposurePanel";
 import { TradingTimeline } from "./TradingTimeline";
-import { BrokerConnectionManager } from "../../lib/brokers/manager";
-import { RealTimeRiskEngine } from "../../lib/risk-engine";
-import { Activity, ShieldCheck, Zap } from "lucide-react";
+import { Activity, ShieldCheck, Zap, RefreshCw, ChevronRight, AlertCircle, Lock } from "lucide-react";
 
 export const LiveTradeCenter: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [accountData, setAccountData] = useState({
-    balance: 10000,
-    equity: 10250,
-    margin: 500,
-    freeMargin: 9750,
-    unrealizedPnl: 250,
-    dailyPnl: 150
+    balance: 0,
+    equity: 0,
+    margin: 0,
+    freeMargin: 0,
+    unrealizedPnl: 0,
+    dailyPnl: 0
   });
 
   const [positions, setPositions] = useState<any[]>([]);
@@ -24,71 +22,108 @@ export const LiveTradeCenter: React.FC = () => {
   const [timeline, setTimeline] = useState<any[]>([]);
 
   useEffect(() => {
-    // Simulation for Sprint 4
+    // Initializing state - awaiting real broker connection in future sprint
     const timer = setTimeout(() => {
       setLoading(false);
-      setPositions([
-        { id: '1', symbol: 'EURUSD', direction: 'long', lotSize: 0.1, entryPrice: 1.0850, currentPrice: 1.0875, unrealizedPnl: 25.00, openedAt: new Date().toISOString() },
-        { id: '2', symbol: 'XAUUSD', direction: 'short', lotSize: 0.05, entryPrice: 2350.00, currentPrice: 2345.50, unrealizedPnl: 225.00, openedAt: new Date().toISOString() }
-      ]);
-      setTimeline([
-        { type: 'FIREWALL_PASSED', occurred_at: new Date(Date.now() - 3600000).toISOString(), payload: { symbol: 'XAUUSD' } },
-        { type: 'ORDER_FILLED', occurred_at: new Date(Date.now() - 3500000).toISOString(), payload: { symbol: 'XAUUSD' } },
-        { type: 'BLUEPRINT_CREATED', occurred_at: new Date(Date.now() - 5000000).toISOString(), payload: { symbol: 'EURUSD' } }
-      ]);
-    }, 1000);
+    }, 500);
 
     return () => clearTimeout(timer);
   }, []);
 
-  if (loading) return <div className="p-8 text-center text-slate-500">Initializing Live Trade Center...</div>;
+  if (loading) return (
+    <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-6">
+       <div className="w-16 h-16 rounded-3xl bg-white/5 border border-white/5 flex items-center justify-center">
+          <RefreshCw size={24} className="text-mint animate-spin" />
+       </div>
+       <p className="text-[10px] font-black text-muted uppercase tracking-[0.3em]">Initializing Live Environment...</p>
+    </div>
+  );
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-700">
-      <header className="flex justify-between items-center">
+    <div className="space-y-10 animate-in text-main max-w-[1600px] mx-auto">
+      <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-            <Activity className="text-mint" /> Live Trading
-          </h1>
-          <p className="text-slate-400 mt-1">Real-time execution and monitoring. <span className="text-[10px] text-slate-600 font-bold uppercase tracking-widest ml-2">Broker Engine™</span></p>
-        </div>
-        <div className="flex gap-3">
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-800/50 rounded-full border border-slate-700/50">
-            <div className="h-2 w-2 rounded-full bg-mint animate-pulse" />
-            <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider">MT5 Connected</span>
+          <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-1.5 px-2 py-0.5 bg-amber/10 border border-amber/20 rounded text-[9px] font-black text-amber uppercase tracking-widest">
+               Standby
+            </div>
+            <span className="text-[10px] text-muted font-black uppercase tracking-[0.2em]">Institutional Terminal</span>
           </div>
-          <button className="secondary-button !py-1.5"><ShieldCheck size={14} /> Risk Audit</button>
-          <button className="primary-button !py-1.5"><Zap size={14} /> New Order</button>
+          <h1 className="text-4xl font-black tracking-tighter">Live Operations</h1>
+          <p className="text-muted text-sm font-medium mt-1">Real-time execution center. Connect a broker node to begin.</p>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4 px-6 py-3 bg-white/5 border border-white/10 rounded-2xl">
+             <div className="flex flex-col">
+                <span className="text-[9px] font-black text-muted uppercase tracking-widest leading-none">Broker Status</span>
+                <span className="text-xs font-black text-muted mt-1 flex items-center gap-2 uppercase">
+                   Disconnected <div className="w-1.5 h-1.5 rounded-full bg-white/10"></div>
+                </span>
+             </div>
+             <div className="w-px h-6 bg-line"></div>
+             <div className="flex flex-col">
+                <span className="text-[9px] font-black text-muted uppercase tracking-widest leading-none">Latency</span>
+                <span className="text-xs font-black text-muted mt-1">---</span>
+             </div>
+          </div>
+          <button className="primary-button !h-12 px-8 rounded-2xl bg-indigo shadow-[0_0_20px_rgba(99,102,241,0.2)]">
+             <Zap size={16} className="mr-2 fill-current" /> Connect Broker
+          </button>
         </div>
       </header>
 
-      <AccountOverview data={accountData} />
+      <div className="animate-in delay-100">
+        <AccountOverview data={accountData} />
+      </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1.6fr_0.9fr]">
-        <div className="space-y-6">
+      <div className="grid gap-10 lg:grid-cols-12">
+        <div className="lg:col-span-8 space-y-10 animate-in delay-200">
           <OpenPositionsPanel positions={positions} />
-          <div className="grid md:grid-cols-2 gap-6">
+
+          <div className="grid md:grid-cols-2 gap-10">
             <OrdersPanel orders={orders} />
-            <ExposurePanel exposure={{ 'EURUSD': 10875, 'XAUUSD': 117275 }} />
+            <ExposurePanel exposure={{}} />
           </div>
         </div>
-        <div className="space-y-6">
+
+        <div className="lg:col-span-4 space-y-8 animate-in delay-300">
           <TradingTimeline events={timeline} />
-          <article className="panel bg-mint/5 border-mint/20">
-            <div className="panel-heading">
+
+          <article className="panel border-white/5 relative overflow-hidden group">
+            <div className="panel-heading mb-8">
               <div>
-                <p className="text-mint/80">Discipline Guardian™</p>
-                <h2 className="text-mint">System Status</h2>
+                <p className="text-muted font-black uppercase">Safety Protocol</p>
+                <h2 className="text-2xl font-black tracking-tight">Execution Firewall</h2>
               </div>
-              <ShieldCheck className="text-mint" size={20} />
+              <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-muted">
+                 <Lock size={20} strokeWidth={2.5} />
+              </div>
             </div>
-            <div className="text-sm text-slate-300 space-y-3">
-              <p>Execution Firewall is <strong>ACTIVE</strong>.</p>
-              <div className="p-3 bg-mint/10 rounded border border-mint/10 text-xs flex justify-between items-center">
-                <span>Discipline Score (Today)</span>
-                <span className="font-bold text-mint">98/100</span>
+
+            <div className="space-y-8 relative">
+              <div className="p-6 bg-white/5 border border-white/10 rounded-2xl">
+                <div className="flex justify-between items-end mb-4">
+                   <div>
+                      <span className="block text-[10px] font-black text-muted uppercase tracking-widest mb-1">Daily Discipline</span>
+                      <span className="text-3xl font-black text-muted tabular-nums">---</span>
+                   </div>
+                </div>
+                <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                   <div className="h-full bg-white/10" style={{ width: '0%' }}></div>
+                </div>
               </div>
-              <p className="text-[10px] text-slate-400 italic">"You are trading within your plan parameters. No violations detected."</p>
+
+              <div className="bg-white/5 border border-white/5 rounded-2xl p-6 flex gap-4">
+                 <AlertCircle className="text-muted shrink-0 mt-0.5" size={18} />
+                 <p className="text-xs text-muted leading-relaxed font-medium italic">
+                    "Connect an institutional broker node to activate real-time behavioral monitoring and capital protection protocols."
+                 </p>
+              </div>
+
+              <button className="secondary-button w-full justify-between h-12 px-6 rounded-xl text-[10px] font-black uppercase tracking-widest disabled:opacity-50" disabled>
+                 Awaiting Live Link <ChevronRight size={14} className="text-muted" />
+              </button>
             </div>
           </article>
         </div>

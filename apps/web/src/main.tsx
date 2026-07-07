@@ -18,7 +18,12 @@ import {
   Terminal,
   ShieldAlert,
   Moon,
-  Sun
+  Sun,
+  Search,
+  Bell,
+  Settings,
+  ChevronRight,
+  LayoutGrid
 } from "lucide-react";
 import { runSavedStrategyBacktest } from "./lib/backtester";
 import { generateCoachReport } from "./lib/coach";
@@ -82,25 +87,51 @@ import { OptimizationView } from "./features/research/OptimizationView";
 import "./styles.css";
 
 // --- CONSTANTS ---
-const appTabs = [
-  { id: "dashboard", label: "Dashboard", icon: Gauge, subtitle: "" },
-  { id: "live", label: "Live Trading", icon: Activity, subtitle: "" },
-  { id: "thesis", label: "Market Analysis", icon: Terminal, subtitle: "Develop and validate trading ideas" },
-  { id: "firewall", label: "Trade Checklist", icon: ShieldCheck, subtitle: "Powered by Execution Firewall™" },
-  { id: "journal", label: "Trading Journal", icon: BookOpen, subtitle: "Track your trades and improve discipline" },
-  { id: "projects", label: "Research", icon: FolderKanban, subtitle: "Projects, studies and trading ideas" },
-  { id: "backtests", label: "Backtesting", icon: Play, subtitle: "Test strategies using historical data" },
-  { id: "builder", label: "Strategy Builder", icon: Braces, subtitle: "Build and manage trading systems" },
-  { id: "edge", label: "Opportunities", icon: Activity, subtitle: "Find high probability market setups" },
-  { id: "optimization", label: "Strategy Optimizer", icon: FastForward, subtitle: "Improve strategy performance" },
-  { id: "coach", label: "AI Coach", icon: Bot, subtitle: "Personal trading mentor" },
-  { id: "reports", label: "Reports", icon: WalletCards, subtitle: "" },
-  { id: "risk", label: "Settings", icon: ShieldCheck, subtitle: "" },
-  { id: "performance", label: "Performance", icon: ShieldAlert, subtitle: "Powered by Discipline Guardian™" },
-  { id: "imports", label: "Market Data", icon: CandlestickChart, subtitle: "" }
+const navigationGroups = [
+  {
+    title: "Mission Control",
+    items: [
+      { id: "dashboard", label: "Dashboard", icon: LayoutGrid, subtitle: "Operational overview" },
+      { id: "live", label: "Live Trading", icon: Activity, subtitle: "Monitor & Execute" }
+    ]
+  },
+  {
+    title: "Research",
+    items: [
+      { id: "thesis", label: "Market Analysis", icon: Terminal, subtitle: "Develop & validate ideas" },
+      { id: "projects", label: "Research", icon: FolderKanban, subtitle: "Projects & studies" },
+      { id: "backtests", label: "Backtesting", icon: Play, subtitle: "Test strategies" },
+      { id: "optimization", label: "Strategy Optimizer", icon: FastForward, subtitle: "Improve performance" },
+      { id: "imports", label: "Market Data", icon: CandlestickChart, subtitle: "Ingest datasets" }
+    ]
+  },
+  {
+    title: "Trading Journey",
+    items: [
+      { id: "firewall", label: "Trade Checklist", icon: ShieldCheck, subtitle: "Pre-trade validation" },
+      { id: "journal", label: "Trading Journal", icon: BookOpen, subtitle: "Track & improve" },
+      { id: "builder", label: "Strategy Builder", icon: Braces, subtitle: "Create & manage" }
+    ]
+  },
+  {
+    title: "Intelligence",
+    items: [
+      { id: "edge", label: "Opportunities", icon: Activity, subtitle: "High probability setups" },
+      { id: "coach", label: "AI Coach", icon: Bot, subtitle: "Personal trading mentor" },
+      { id: "reports", label: "Reports", icon: WalletCards, subtitle: "Performance analytics" }
+    ]
+  },
+  {
+    title: "Governance",
+    items: [
+      { id: "performance", label: "Discipline", icon: ShieldAlert, subtitle: "Behavioral metrics" },
+      { id: "risk", label: "Settings", icon: Settings, subtitle: "System configuration" }
+    ]
+  }
 ] as const;
 
-type AppTab = "dashboard" | "live" | "thesis" | "firewall" | "journal" | "projects" | "backtests" | "builder" | "edge" | "optimization" | "coach" | "reports" | "risk" | "performance" | "imports";
+const allAppTabs = navigationGroups.flatMap(g => g.items);
+type AppTab = typeof allAppTabs[number]["id"];
 
 
 import { supabase } from "./lib/supabase";
@@ -447,41 +478,57 @@ function App() {
   }
 
   return (
-    <main className="min-h-screen bg-ink text-main flex overflow-hidden">
-      <aside className="w-64 border-r border-line bg-sidebar flex flex-col shrink-0">
-        <div className="p-6">
-          <button onClick={() => setMode("landing")} className="flex items-center gap-2 group">
-            <div className="w-8 h-8 bg-mint rounded flex items-center justify-center group-hover:rotate-12 transition">
-              <Terminal size={18} className="text-white" />
+    <main className="min-h-screen bg-ink text-main flex overflow-hidden font-sans">
+      {/* Institutional Sidebar */}
+      <aside className="w-72 border-r border-line bg-sidebar flex flex-col shrink-0 z-30">
+        <div className="p-8 pb-6">
+          <button onClick={() => setMode("landing")} className="flex items-center gap-3 group">
+            <div className="w-10 h-10 bg-mint rounded-xl flex items-center justify-center group-hover:rotate-6 transition-transform shadow-lg shadow-mint/20">
+              <Terminal size={22} className="text-ink" strokeWidth={3} />
             </div>
-            <span className="text-lg font-bold text-main">QuantEdge</span>
+            <div className="text-left">
+              <span className="block text-lg font-black tracking-tight text-main">QuantEdge</span>
+              <span className="block text-[10px] text-muted font-bold uppercase tracking-widest">Research OS</span>
+            </div>
           </button>
         </div>
 
-        <nav className="flex-1 px-3 space-y-1 overflow-y-auto custom-scrollbar">
-          {appTabs.map((tab) => {
-            const Icon = tab.icon;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center w-full gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                  activeTab === tab.id
-                    ? "bg-panel text-main border border-line shadow-sm"
-                    : "text-muted hover:bg-panel hover:text-main"
-                }`}
-              >
-                <Icon size={18} className={activeTab === tab.id ? "text-mint" : ""} />
-                {tab.label}
-              </button>
-            );
-          })}
+        <nav className="flex-1 px-4 py-4 space-y-8 overflow-y-auto custom-scrollbar">
+          {navigationGroups.map((group) => (
+            <div key={group.title} className="space-y-1">
+              <h3 className="px-4 text-[10px] font-black text-muted uppercase tracking-[0.2em] mb-3">{group.title}</h3>
+              {group.items.map((tab) => {
+                const Icon = tab.icon;
+                const isActive = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id as AppTab)}
+                    className={`group flex items-center w-full gap-4 px-4 py-3 rounded-xl text-sm font-bold transition-all ${
+                      isActive
+                        ? "bg-white/5 text-main shadow-sm border border-white/5"
+                        : "text-muted hover:text-main hover:bg-white/5"
+                    }`}
+                  >
+                    <div className={`flex items-center justify-center w-5 h-5 transition-colors ${isActive ? "text-mint" : "group-hover:text-main"}`}>
+                      <Icon size={18} strokeWidth={isActive ? 2.5 : 2} />
+                    </div>
+                    <div className="flex-1 text-left">
+                      <span className="block leading-none">{tab.label}</span>
+                      <span className="block text-[9px] text-muted/60 mt-1 font-medium group-hover:text-muted/80">{tab.subtitle}</span>
+                    </div>
+                    {isActive && <ChevronRight size={14} className="text-mint" />}
+                  </button>
+                );
+              })}
+            </div>
+          ))}
         </nav>
 
-        <div className="p-4 space-y-2 border-t border-line bg-sidebar/50">
+        <div className="p-6 space-y-3 border-t border-line bg-sidebar/30">
           <button
             onClick={toggleTheme}
-            className="flex items-center w-full gap-3 px-4 py-2.5 rounded-lg text-xs font-bold text-muted hover:bg-panel hover:text-main transition-colors uppercase tracking-widest"
+            className="flex items-center w-full gap-3 px-4 py-2.5 rounded-xl text-xs font-black text-muted hover:bg-white/5 hover:text-main transition-all uppercase tracking-widest"
           >
             {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
             {theme === "dark" ? "Light Mode" : "Dark Mode"}
@@ -490,14 +537,14 @@ function App() {
           {isSignedIn ? (
             <button
               onClick={handleSignOut}
-              className="flex items-center w-full gap-3 px-4 py-2.5 rounded-lg text-xs font-bold text-rose-400 hover:bg-rose-500/10 transition-colors uppercase tracking-widest"
+              className="flex items-center w-full gap-3 px-4 py-2.5 rounded-xl text-xs font-black text-rose-400 hover:bg-rose-500/10 transition-all uppercase tracking-widest"
             >
               <LogOut size={16} /> Sign Out
             </button>
           ) : (
             <button
               onClick={() => setIsAuthModalOpen(true)}
-              className="flex items-center w-full gap-3 px-4 py-2.5 rounded-lg text-xs font-bold text-mint hover:bg-mint/10 transition-colors uppercase tracking-widest"
+              className="flex items-center w-full gap-3 px-4 py-2.5 rounded-xl text-xs font-black text-mint hover:bg-mint/10 transition-all uppercase tracking-widest"
             >
               <User size={16} /> Sign In
             </button>
@@ -505,28 +552,72 @@ function App() {
         </div>
       </aside>
 
-      <section className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <header className="flex min-h-20 items-center justify-between border-b border-line bg-ink/90 px-8 backdrop-blur z-20">
-          <div className="flex items-center gap-4">
-            <div>
-              <h2 className="text-lg font-semibold text-main">{appTabs.find(t => t.id === activeTab)?.label}</h2>
-              {appTabs.find(t => t.id === activeTab)?.subtitle && (
-                <p className="text-[10px] text-muted font-bold uppercase tracking-widest mt-0.5">
-                  {appTabs.find(t => t.id === activeTab)?.subtitle}
-                </p>
-              )}
+      <section className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+        {/* Global Header */}
+        <header className="flex min-h-[80px] items-center justify-between border-b border-line bg-ink/80 px-10 backdrop-blur-xl z-20">
+          <div className="flex items-center gap-10 flex-1">
+            <div className="relative w-96 group">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-mint transition-colors" size={16} />
+              <input
+                type="text"
+                placeholder="Search research, strategies, symbols... (Ctrl+K)"
+                className="w-full h-11 bg-white/5 border border-white/5 rounded-xl pl-12 pr-4 text-sm focus:outline-none focus:border-mint/30 focus:bg-white/10 transition-all"
+              />
             </div>
-            {!isSignedIn && <span className="bg-panel border border-line px-2 py-0.5 rounded text-[10px] uppercase tracking-wider text-muted font-bold">Demo Mode</span>}
+
+            <div className="flex items-center gap-6">
+              <div className="flex flex-col">
+                <span className="text-[10px] text-muted font-black uppercase tracking-widest">Market Status</span>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <div className={`w-1.5 h-1.5 rounded-full shadow-glow animate-pulse ${data.activeSession ? 'bg-mint' : 'bg-amber'}`}></div>
+                  <span className="text-xs font-bold text-main">{data.activeSession ? 'Live' : 'Standby'}</span>
+                </div>
+              </div>
+              <div className="w-px h-8 bg-line"></div>
+              <div className="flex flex-col">
+                <span className="text-[10px] text-muted font-black uppercase tracking-widest">Net P/L</span>
+                <span className={`text-sm font-black mt-0.5 ${data.metrics[0]?.status === 'positive' ? 'text-mint' : 'text-danger'}`}>
+                  {data.metrics[0]?.value || "$0"}
+                </span>
+              </div>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <button className="icon-button" onClick={refresh} disabled={isLoading}><RefreshCw size={18} className={isLoading ? "spin" : ""} /></button>
-            {isSignedIn && <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-panel border border-line ml-2"><div className="w-5 h-5 rounded-full bg-mint flex items-center justify-center text-[10px] text-white font-bold">{userEmail[0]?.toUpperCase()}</div><span className="text-xs font-medium text-dim">{userEmail.split('@')[0]}</span></div>}
-            <button className="primary-button ml-2" onClick={() => { setActiveTab("backtests"); setLastResult(null); setActiveProject(null); }}><Play size={16} /> New Backtest</button>
+
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 mr-4">
+              <button className="relative w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
+                <Bell size={18} className="text-muted" />
+                <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-ink"></span>
+              </button>
+              <button className="icon-button !rounded-xl" onClick={refresh} disabled={isLoading}>
+                <RefreshCw size={18} className={isLoading ? "spin" : "text-muted"} />
+              </button>
+            </div>
+
+            <div className="w-px h-8 bg-line mr-4"></div>
+
+            <div className="flex items-center gap-4 group cursor-pointer">
+              <div className="text-right hidden sm:block">
+                <span className="block text-sm font-black text-main tracking-tight leading-none">
+                  {isSignedIn ? userEmail.split('@')[0] : "Guest User"}
+                </span>
+                <span className="block text-[10px] text-mint font-bold uppercase tracking-widest mt-1">
+                  {data.riskProfile?.prop_firm || (isSignedIn ? "Pro Plan" : "Demo Mode")}
+                </span>
+              </div>
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-mint/20 to-indigo/20 border border-white/10 flex items-center justify-center group-hover:border-mint/50 transition-all overflow-hidden shadow-lg shadow-mint/10">
+                {isSignedIn ? (
+                  <span className="text-lg font-black text-mint">{userEmail[0]?.toUpperCase()}</span>
+                ) : (
+                  <User size={20} className="text-muted" />
+                )}
+              </div>
+            </div>
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto custom-scrollbar">
-          <div className="grid gap-6 p-8">
+        <div className="flex-1 overflow-y-auto custom-scrollbar bg-[radial-gradient(circle_at_top_right,rgba(0,242,254,0.03),transparent_40%)]">
+          <div className="max-w-[1600px] mx-auto p-10">
             {activeTab === "dashboard" && <DashboardView data={data} onNavigate={setActiveTab} />}
             {activeTab === "live" && <LiveTradeCenter />}
             {activeTab === "thesis" && <MarketThesisWorkspace data={data} refresh={refresh} />}

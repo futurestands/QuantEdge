@@ -76,7 +76,7 @@ import { EdgeView } from "./features/analytics/EdgeView";
 import { CoachView } from "./features/analytics/CoachView";
 import { ReportsView } from "./features/analytics/ReportsView";
 import { RiskView } from "./features/risk/RiskView";
-import { ImportsView } from "./features/research/ImportsView";
+import { MarketDataCenter } from "./features/research/MarketDataCenter";
 import { AuthModal } from "./features/auth/AuthModal";
 import { DisciplineView } from "./features/discipline/DisciplineView";
 import { MarketThesisWorkspace } from "./features/blueprint/MarketThesisWorkspace";
@@ -102,7 +102,7 @@ const navigationGroups = [
       { id: "projects", label: "Research", icon: FolderKanban, subtitle: "Projects & studies" },
       { id: "backtests", label: "Backtesting", icon: Play, subtitle: "Test strategies" },
       { id: "optimization", label: "Strategy Optimizer", icon: FastForward, subtitle: "Improve performance" },
-      { id: "imports", label: "Market Data", icon: CandlestickChart, subtitle: "Ingest datasets" }
+      { id: "imports", label: "Market Data Center", icon: CandlestickChart, subtitle: "Ingest datasets" }
     ]
   },
   {
@@ -260,12 +260,8 @@ function App() {
           setBacktestEndAt(toDateInputValue(firstMarket.lastCandle));
         }
 
-        // Auto-switch to app if they have an org, otherwise stay on landing
-        if (dashData.organization) {
-          setMode("app");
-        } else {
-          setMode("landing");
-        }
+        // Auto-switch to app mode if signed in, but handle workspace init
+        setMode("app");
       } else {
         setDashboard(buildDemoDashboard());
         setMode("landing");
@@ -286,6 +282,7 @@ function App() {
     try {
       await signInWithEmail(email, password);
       await refresh();
+      setMode("app");
       setIsAuthModalOpen(false);
     } catch (error) { setStatus("Sign in failed."); }
   }
@@ -303,6 +300,7 @@ function App() {
 
       if (data.session) {
         await refresh();
+        setMode("app");
         setIsAuthModalOpen(false);
       } else {
         setStatus("Verification email sent. Please check your inbox.");
@@ -626,7 +624,20 @@ function App() {
             {activeTab === "performance" && <DisciplineView data={data} refresh={refresh} />}
             {activeTab === "builder" && <BuilderView data={data} strategyName={strategyName} setStrategyName={setStrategyName} direction={direction} setDirection={setDirection} sessionFilter={sessionFilter} setSessionFilter={setSessionFilter} emaFast={emaFast} setEmaFast={setEmaFast} emaSlow={emaSlow} setEmaSlow={setEmaSlow} rsiPeriod={rsiPeriod} setRsiPeriod={setRsiPeriod} rsiMax={rsiMax} setRsiMax={setRsiMax} stopLossAtr={stopLossAtr} setStopLossAtr={setStopLossAtr} takeProfitRr={takeProfitRr} setTakeProfitRr={setTakeProfitRr} riskPerTrade={riskPerTrade} setRiskPerTrade={setRiskPerTrade} initialBalance={initialBalance} setInitialBalance={setInitialBalance} entryRule={entryRule} setEntryRule={setEntryRule} exitRule={exitRule} setExitRule={setExitRule} onSubmit={handleCreateStrategy} />}
             {activeTab === "backtests" && (<BacktestingLab data={data} markets={markets} isRunning={isRunning} onSubmit={handleRunBacktest} selectedStrategyId={selectedStrategyId} setSelectedStrategyId={setSelectedStrategyId} selectedMarketKey={selectedMarketKey} setSelectedMarketKey={setSelectedMarketKey} backtestStartAt={backtestStartAt} setBacktestStartAt={setBacktestStartAt} backtestEndAt={backtestEndAt} setBacktestEndAt={setBacktestEndAt} progress={backtestProgress} statusMessage={backtestStatus} lastResult={lastResult} setLastResult={setLastResult} isSignedIn={isSignedIn} onAuthRequired={() => setIsAuthModalOpen(true)} initialBalance={initialBalance} setInitialBalance={setInitialBalance} riskPerTrade={riskPerTrade} setRiskPerTrade={setRiskPerTrade} commission={commissionPerTrade} setCommission={setCommissionPerTrade} spread={spread} setSpread={setSpread} slippage={slippage} setSlippage={setSlippage} direction={direction} setDirection={setDirection} setActiveTab={setActiveTab} activeProject={activeProject} handleUpdateProjectStatus={handleUpdateProjectStatus} notes={projectNotes} setNotes={setProjectNotes} onSaveNotes={() => { if(activeProject) saveResearchProjectNotes(activeProject.id, projectNotes); }} formatMetric={formatMetric} />)}
-            {activeTab === "imports" && <ImportsView csvSymbol={csvSymbol} setCsvSymbol={setCsvSymbol} csvTimeframe={csvTimeframe} setCsvTimeframe={setCsvTimeframe} setCsvFile={setCsvFile} handleCandleImport={handleCandleImport} setTradeCsvFile={setTradeCsvFile} handleTradeImport={handleTradeImport} />}
+            {activeTab === "imports" && (
+              <MarketDataCenter
+                markets={markets}
+                csvSymbol={csvSymbol}
+                setCsvSymbol={setCsvSymbol}
+                csvTimeframe={csvTimeframe}
+                setCsvTimeframe={setCsvTimeframe}
+                setCsvFile={setCsvFile}
+                handleCandleImport={handleCandleImport}
+                setTradeCsvFile={setTradeCsvFile}
+                handleTradeImport={handleTradeImport}
+                isLoading={isLoading}
+              />
+            )}
             {activeTab === "journal" && <JournalView data={data} selectedTrade={selectedTrade} setSelectedTradeId={setSelectedTradeId} journalEmotion={journalEmotion} setJournalEmotion={setJournalEmotion} journalMistakes={journalMistakes} setJournalMistakes={setJournalMistakes} journalNotes={journalNotes} setJournalNotes={setJournalNotes} onSubmit={handleSaveJournal} activeProject={activeProject} formatMetric={formatMetric} />}
             {activeTab === "edge" && <EdgeView data={data} edgeFinder={edgeFinder} formatMetric={formatMetric} />}
             {activeTab === "optimization" && <OptimizationView data={data} refresh={refresh} />}

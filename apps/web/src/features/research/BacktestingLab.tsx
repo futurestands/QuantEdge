@@ -46,6 +46,28 @@ export const BacktestingLab = ({ data, markets, isRunning, onSubmit, selectedStr
     </div>
   );
 
+  if (markets.length === 0) return (
+    <div className="max-w-4xl mx-auto py-40 animate-in">
+       <article className="panel p-20 text-center flex flex-col items-center justify-center bg-[radial-gradient(circle_at_center,rgba(0,242,254,0.05),transparent_70%)] border-dashed border-white/5 rounded-[40px]">
+          <div className="w-24 h-24 bg-white/5 rounded-3xl flex items-center justify-center mb-10 border border-white/5 shadow-2xl">
+             <Database size={48} className="text-muted" strokeWidth={1} />
+          </div>
+          <h2 className="text-3xl font-black tracking-tight mb-4 uppercase italic">Simulation Gated // Data Missing</h2>
+          <p className="text-muted mb-12 max-w-md mx-auto leading-relaxed text-lg">
+             Backtesting cannot function without validated historical data. Connect a market source or import a dataset to begin institutional research.
+          </p>
+          <div className="flex flex-wrap justify-center gap-4">
+             <button className="primary-button !h-14 px-10 rounded-2xl bg-indigo shadow-xl" onClick={() => setActiveTab("imports")}>
+                <Upload size={20} className="mr-2" /> Ingest Market Data
+             </button>
+             <button className="secondary-button !h-14 px-10 rounded-2xl border-white/10" onClick={() => setActiveTab("imports")}>
+                <Search size={20} className="mr-2" /> Explore Sources
+             </button>
+          </div>
+       </article>
+    </div>
+  );
+
   return (
     <div className="max-w-4xl mx-auto space-y-10 pb-20 animate-in">
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">

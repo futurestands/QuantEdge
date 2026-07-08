@@ -15,7 +15,9 @@ import {
   FileSpreadsheet,
   Layers,
   ChevronRight,
-  RefreshCw
+  RefreshCw,
+  Zap,
+  Target
 } from "lucide-react";
 import { MetricBox } from "../../components/ui/Metrics";
 

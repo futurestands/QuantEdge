@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { RefreshCw, Archive, Share2, FileDown, ClipboardList, BarChart3, TrendingUp, BookOpen, Bot, Zap, Clock, ChevronRight, Target, ShieldCheck, History, Info, Filter } from "lucide-react";
+import { RefreshCw, Archive, Share2, FileDown, ClipboardList, BarChart3, TrendingUp, BookOpen, Bot, Zap, Clock, ChevronRight, Target, ShieldCheck, History, Info, Filter, Search } from "lucide-react";
 import { ComposedChart, Area, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { ScoreCard, MetricBox, StatItem, StatBadge } from "../../components/ui/Metrics";
 import { MetaRow } from "../../components/ui/Cards";

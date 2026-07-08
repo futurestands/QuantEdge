@@ -89,49 +89,52 @@ import "./styles.css";
 // --- CONSTANTS ---
 const navigationGroups = [
   {
-    title: "Mission Control",
+    title: "Operations",
     items: [
-      { id: "dashboard", label: "Dashboard", icon: LayoutGrid, subtitle: "Operational overview" },
-      { id: "live", label: "Live Trading", icon: Activity, subtitle: "Monitor & Execute" }
+      { id: "dashboard", label: "Terminal Home", icon: LayoutGrid, subtitle: "Actionable overview" },
+      { id: "live", label: "Live Ledger", icon: Activity, subtitle: "Active execution" }
     ]
   },
   {
-    title: "Research",
+    title: "Quantitative Research",
     items: [
-      { id: "thesis", label: "Market Analysis", icon: Terminal, subtitle: "Develop & validate ideas" },
-      { id: "projects", label: "Research", icon: FolderKanban, subtitle: "Projects & studies" },
-      { id: "backtests", label: "Backtesting", icon: Play, subtitle: "Test strategies" },
-      { id: "optimization", label: "Strategy Optimizer", icon: FastForward, subtitle: "Improve performance" },
-      { id: "imports", label: "Market Data Center", icon: CandlestickChart, subtitle: "Ingest datasets" }
+      { id: "thesis", label: "Market Thesis", icon: Terminal, subtitle: "Scenario modeling" },
+      { id: "projects", label: "Study Library", icon: FolderKanban, subtitle: "Archived research" },
+      { id: "backtests", label: "Simulation Lab", icon: Play, subtitle: "Strategy validation" },
+      { id: "optimization", label: "Parameter Optimizer", icon: FastForward, subtitle: "Genetic distribution" },
+      { id: "imports", label: "Data Ingestion", icon: CandlestickChart, subtitle: "Historical archives" }
     ]
   },
   {
-    title: "Trading Journey",
+    title: "Execution Suite",
     items: [
-      { id: "firewall", label: "Trade Checklist", icon: ShieldCheck, subtitle: "Pre-trade validation" },
-      { id: "journal", label: "Trading Journal", icon: BookOpen, subtitle: "Track & improve" },
-      { id: "builder", label: "Strategy Builder", icon: Braces, subtitle: "Create & manage" }
+      { id: "firewall", label: "Pre-Trade Firewall", icon: ShieldCheck, subtitle: "Risk validation" },
+      { id: "journal", label: "Performance Journal", icon: BookOpen, subtitle: "Review & document" },
+      { id: "builder", label: "Logic Builder", icon: Braces, subtitle: "Define protocols" }
     ]
   },
   {
     title: "Intelligence",
     items: [
-      { id: "edge", label: "Opportunities", icon: Activity, subtitle: "High probability setups" },
-      { id: "coach", label: "AI Coach", icon: Bot, subtitle: "Personal trading mentor" },
-      { id: "reports", label: "Reports", icon: WalletCards, subtitle: "Performance analytics" }
+      { id: "edge", label: "Alpha Discovery", icon: Activity, subtitle: "Edge identification" },
+      { id: "coach", label: "Neural Coach", icon: Bot, subtitle: "Behavioral audit" },
+      { id: "reports", label: "Analytic Reports", icon: WalletCards, subtitle: "Institutional metrics" }
     ]
   },
   {
     title: "Governance",
     items: [
-      { id: "performance", label: "Discipline", icon: ShieldAlert, subtitle: "Behavioral metrics" },
-      { id: "risk", label: "Settings", icon: Settings, subtitle: "System configuration" }
+      { id: "performance", label: "Discipline Node", icon: ShieldAlert, subtitle: "Stability metrics" },
+      { id: "risk", label: "System Config", icon: Settings, subtitle: "Terminal parameters" }
     ]
   }
 ] as const;
 
-const allAppTabs = navigationGroups.flatMap(g => g.items);
-type AppTab = typeof allAppTabs[number]["id"];
+const allAppTabs = navigationGroups.flatMap(g => g.items as any);
+type AppTab =
+  | "dashboard" | "live" | "thesis" | "projects" | "backtests"
+  | "optimization" | "imports" | "firewall" | "journal" | "builder"
+  | "edge" | "coach" | "reports" | "performance" | "risk";
 
 
 import { supabase } from "./lib/supabase";
@@ -233,11 +236,19 @@ function App() {
   const [activeProject, setActiveProject] = useState<ResearchProject | null>(null);
   const [projectNotes, setProjectNotes] = useState("");
 
+  useEffect(() => {
+    if (isSignedIn) {
+      setMode("app");
+    }
+  }, [isSignedIn]);
+
   async function refresh() {
     setIsLoading(true);
     try {
       const session = await getSession();
-      setIsSignedIn(Boolean(session));
+      const signedIn = Boolean(session);
+      setIsSignedIn(signedIn);
+
       if (session?.user?.email) {
         setUserEmail(session.user.email);
         const dashData = await loadDashboardData();
@@ -260,11 +271,10 @@ function App() {
           setBacktestEndAt(toDateInputValue(firstMarket.lastCandle));
         }
 
-        // Auto-switch to app mode if signed in, but handle workspace init
         setMode("app");
       } else {
         setDashboard(buildDemoDashboard());
-        setMode("landing");
+        // Do not force landing mode here if we want to allow demo view
       }
       setStatus(session ? "Terminal Active" : "Guest Node");
     } catch (error) {

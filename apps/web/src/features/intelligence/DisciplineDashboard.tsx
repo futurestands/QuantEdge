@@ -70,7 +70,7 @@ export const DisciplineDashboard = ({ scores }: { scores: DisciplineScore[] }) =
                         stroke="var(--mint-bright)"
                         strokeWidth={4}
                         dot={{ r: 6, fill: '#05070a', stroke: '#35d0a3', strokeWidth: 2 }}
-                        activeDot={{ r: 8, fill: '#35d0a3', shadow: '0 0 15px rgba(53,208,163,0.5)' }}
+                        activeDot={{ r: 8, fill: '#35d0a3' }}
                         animationDuration={1500}
                       />
                    </LineChart>

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ShieldCheck, Zap, AlertTriangle, CheckCircle2, XCircle, ChevronRight, Lock, Target, Scale, History, Info } from "lucide-react";
+import { ShieldCheck, Zap, AlertTriangle, CheckCircle2, XCircle, ChevronRight, Lock, Target, Scale, History, Info, Clock } from "lucide-react";
 import { runFirewall, logFirewallAttempt } from "../../lib/firewall";
 
 export const FirewallDashboard = ({ data, refresh }: any) => {

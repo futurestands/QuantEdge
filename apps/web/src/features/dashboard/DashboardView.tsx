@@ -41,58 +41,98 @@ export const DashboardView = ({ data, onNavigate }: { data: DashboardData; onNav
       {/* Institutional Command Center Header */}
       <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8">
         <div>
-          <div className="flex items-center gap-3 mb-3">
-            <div className="px-3 py-1 bg-mint/10 border border-mint/20 rounded-full flex items-center gap-2">
-               <div className="w-1.5 h-1.5 rounded-full bg-mint animate-pulse shadow-glow"></div>
-               <span className="text-[10px] font-black text-mint uppercase tracking-widest text-shadow-sm">System Operational</span>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="px-2 py-0.5 bg-mint/10 border border-mint/20 rounded-md flex items-center gap-1.5">
+               <div className="w-1 h-1 rounded-full bg-mint animate-pulse shadow-glow"></div>
+               <span className="text-[8px] font-black text-mint uppercase tracking-widest">Live Node Active</span>
             </div>
-            <span className="text-muted flex items-center gap-2 text-xs font-bold uppercase tracking-widest opacity-60">
-              <Calendar size={12} /> {currentDate}
+            <span className="text-muted flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest opacity-60">
+              <Calendar size={10} /> {currentDate}
             </span>
           </div>
-          <h1 className="text-5xl font-black tracking-tighter leading-tight">
-            Terminal <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-white/40">Mission Control</span>
+          <h1 className="text-4xl font-black tracking-tighter leading-tight uppercase italic">
+            Terminal <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-white/30 tracking-normal not-italic">Dashboard</span>
           </h1>
-          <p className="text-muted text-sm font-medium mt-2 max-w-2xl">
-            Welcome back, <span className="text-main font-bold">{data.organization?.name || "Trader"}</span>. Your institutional research environment is synchronized.
-          </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-           <button className="secondary-button !h-12 px-6 rounded-2xl group border-white/10 hover:border-indigo/50" onClick={() => onNavigate("imports")}>
-             <Database size={16} className="mr-2 text-indigo group-hover:scale-110 transition-transform" /> Import Market Data
+        <div className="flex flex-wrap items-center gap-2">
+           <button className="secondary-button !h-10 px-4 rounded-xl group border-white/5 bg-white/5 hover:border-indigo/50 text-[10px] font-black uppercase tracking-widest" onClick={() => onNavigate("imports")}>
+             <Database size={14} className="mr-2 text-indigo group-hover:scale-110 transition-transform" /> Ingest Data
            </button>
-           <button className="secondary-button !h-12 px-6 rounded-2xl group border-white/10 hover:border-mint/50" onClick={() => onNavigate("builder")}>
-             <Plus size={16} className="mr-2 text-mint group-hover:scale-110 transition-transform" /> New Strategy
+           <button className="secondary-button !h-10 px-4 rounded-xl group border-white/5 bg-white/5 hover:border-mint/50 text-[10px] font-black uppercase tracking-widest" onClick={() => onNavigate("builder")}>
+             <Plus size={14} className="mr-2 text-mint group-hover:scale-110 transition-transform" /> Logic Builder
            </button>
-           <button className="primary-button !h-12 px-8 rounded-2xl bg-mint-bright shadow-[0_0_30px_rgba(53,208,163,0.3)] hover:scale-105 transition-all" onClick={() => onNavigate("backtests")}>
-             <Zap size={16} className="mr-2 fill-current" /> Execute Simulation
+           <button className="primary-button !h-10 px-6 rounded-xl bg-mint text-ink shadow-[0_0_20px_rgba(53,208,163,0.2)] hover:scale-105 transition-all text-[10px] font-black uppercase tracking-widest" onClick={() => onNavigate("backtests")}>
+             <Zap size={14} className="mr-2 fill-current" /> Run Lab
            </button>
         </div>
       </div>
 
-      {/* Quick Status Ribbon */}
-      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-4 p-1 bg-white/5 border border-white/10 rounded-[28px]">
-         {[
-           { label: "Workspace", value: data.organization?.name || "Personal", icon: Layers, color: "text-indigo" },
-           { label: "Broker", value: "Disconnected", icon: Activity, color: "text-rose-500" },
-           { label: "Data Latency", value: "12ms", icon: Clock, color: "text-mint" },
-           { label: "Active Project", value: latestProject?.name || "None", icon: Target, color: "text-amber" },
-           { label: "Discipline Score", value: "98.4", icon: ShieldCheck, color: "text-mint" },
-           { label: "Readiness", value: `${data.latestBacktest?.metrics?.readiness_score || 0}%`, icon: Zap, color: "text-mint" }
-         ].map((status, idx) => (
-           <div key={idx} className="flex flex-col p-4 rounded-[22px] hover:bg-white/5 transition-colors group cursor-default">
-              <div className="flex items-center gap-2 mb-1">
-                 <status.icon size={12} className={`${status.color} opacity-60 group-hover:opacity-100 transition-opacity`} />
-                 <span className="text-[9px] font-black text-muted uppercase tracking-widest">{status.label}</span>
+      {/* Actionable Intelligence / Directives */}
+      <div className="grid lg:grid-cols-3 gap-6">
+         <article className="panel p-6 bg-gradient-to-br from-indigo/10 to-transparent border-indigo/20 space-y-4">
+            <div className="flex items-center gap-3">
+               <div className="w-8 h-8 rounded-lg bg-indigo/20 flex items-center justify-center text-indigo border border-indigo/30">
+                  <Lightbulb size={18} />
+               </div>
+               <h3 className="text-xs font-black uppercase tracking-widest">Active Directive</h3>
+            </div>
+            <p className="text-sm font-medium leading-relaxed text-dim italic">
+              "Your EMA Pullback strategy shows a structural weakness during Asian session volatility. Recommend running a parameter optimization on SMA fast/slow distribution."
+            </p>
+            <button className="text-[9px] font-black text-indigo uppercase tracking-[0.2em] flex items-center gap-2 hover:translate-x-1 transition-transform" onClick={() => onNavigate("optimization")}>
+               Execute Optimization <ArrowRight size={12} />
+            </button>
+         </article>
+
+         <article className="panel p-6 bg-white/[0.02] border-white/10 space-y-4">
+            <div className="flex items-center gap-3">
+               <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-muted border border-white/10">
+                  <Target size={18} />
+               </div>
+               <h3 className="text-xs font-black uppercase tracking-widest">Research Priority</h3>
+            </div>
+            {latestProject ? (
+              <div className="space-y-2">
+                 <p className="text-xs font-bold text-main uppercase tracking-tight">{latestProject.name}</p>
+                 <div className="flex items-center gap-4">
+                    <span className="text-[10px] text-muted font-black uppercase tracking-widest bg-white/5 px-2 py-0.5 rounded border border-white/5">v{latestProject.version}</span>
+                    <span className="text-[10px] text-muted font-black uppercase tracking-widest">Readiness: {latestProject.readiness_score}%</span>
+                 </div>
               </div>
-              <span className="text-xs font-black text-main truncate tracking-tight">{status.value}</span>
-           </div>
-         ))}
+            ) : (
+              <p className="text-xs text-muted font-medium italic">No active research projects. Initialize a study to begin.</p>
+            )}
+            <button className="text-[9px] font-black text-muted uppercase tracking-[0.2em] flex items-center gap-2 hover:translate-x-1 transition-transform" onClick={() => onNavigate("projects")}>
+               Open Study Library <ArrowRight size={12} />
+            </button>
+         </article>
+
+         <article className="panel p-6 bg-mint/5 border-mint/20 space-y-4">
+            <div className="flex items-center gap-3 text-mint">
+               <div className="w-8 h-8 rounded-lg bg-mint/10 flex items-center justify-center border border-mint/20">
+                  <ShieldCheck size={18} />
+               </div>
+               <h3 className="text-xs font-black uppercase tracking-widest">Deployment Status</h3>
+            </div>
+            <div className="flex items-end justify-between">
+               <div>
+                  <p className="text-[9px] font-black text-muted uppercase tracking-widest mb-1">Risk Compliance</p>
+                  <p className="text-2xl font-black text-main tracking-tighter">98.4%</p>
+               </div>
+               <div className="text-right">
+                  <p className="text-[9px] font-black text-mint-bright uppercase tracking-widest mb-1">Guardian Node</p>
+                  <p className="text-xs font-bold text-main uppercase">Operational</p>
+               </div>
+            </div>
+            <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+               <div className="h-full bg-mint" style={{ width: '98.4%' }} />
+            </div>
+         </article>
       </div>
 
       {/* KPI Section */}
-      <section className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
+      <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
         {data.metrics.map((metric, idx) => (
           <MetricBox
             key={metric.label}
@@ -308,13 +348,13 @@ export const DashboardView = ({ data, onNavigate }: { data: DashboardData; onNav
                       <tr key={idx} className="group hover:bg-white/[0.02] transition-colors cursor-pointer" onClick={() => onNavigate("journal")}>
                         <td className="px-8 py-4 font-black text-muted text-[10px]">#{trade.trade_index}</td>
                         <td className="px-4 py-4">
-                           <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest border ${trade.payload.side === 'long' ? 'bg-mint/10 border-mint/20 text-mint' : 'bg-danger/10 border-danger/20 text-danger'}`}>
-                              {trade.payload.side}
+                           <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest border ${trade.payload?.side === 'long' ? 'bg-mint/10 border-mint/20 text-mint' : 'bg-danger/10 border-danger/20 text-danger'}`}>
+                              {trade.payload?.side || 'Unknown'}
                            </span>
                         </td>
-                        <td className="px-4 py-4 font-black text-dim text-xs">{trade.payload.r_multiple.toFixed(1)}R</td>
-                        <td className={`px-8 py-4 text-right font-black text-sm tracking-tight tabular-nums ${trade.payload.pnl > 0 ? 'text-mint-bright' : 'text-danger'}`}>
-                           {trade.payload.pnl > 0 ? '+' : ''}{trade.payload.pnl.toFixed(2)}
+                        <td className="px-4 py-4 font-black text-dim text-xs">{(trade.payload?.r_multiple ?? 0).toFixed(1)}R</td>
+                        <td className={`px-8 py-4 text-right font-black text-sm tracking-tight tabular-nums ${(trade.payload?.pnl ?? 0) > 0 ? 'text-mint-bright' : 'text-danger'}`}>
+                           {(trade.payload?.pnl ?? 0) > 0 ? '+' : ''}{(trade.payload?.pnl ?? 0).toFixed(2)}
                         </td>
                       </tr>
                     ))}
